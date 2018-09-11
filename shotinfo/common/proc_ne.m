@@ -1,10 +1,12 @@
 function ne = proc_ne(shotno, time_range, ne_type)
 if nargin == 2
     ne_type = 'all';
+elseif nargin == 1
+    time_range = [];
+    ne_type = 'all';
 end
 if haselement({'all','hcn'}, ne_type)
-    hcn = mdsreadsignal(shotno, 'pcs_east', '\dfsdev', time_range);
-    hcn = signalcheck(hcn);
+    hcn = signal_read(shotno, 'pcs_east', 'dfsdev', time_range);
     ne.status = 0;
     if hcn.status
         hcn.mean = mean(hcn.data);
@@ -15,8 +17,7 @@ if haselement({'all','hcn'}, ne_type)
     end
 end
 if haselement({'all','point'}, ne_type)
-    point = mdsreadsignal(shotno, 'east_1', '\point_n6', time_range);
-    point = signalcheck(point);
+    point = signal_read(shotno, 'east_1', '\point_n6', time_range);
     if point.status
         point.mean = mean(point.data);
         if 0.8 < point.mean && point.mean < 10

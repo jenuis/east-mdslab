@@ -5,8 +5,7 @@ if nargin == 1
     least_ip_value = 100e3;
 end
 %% check ip
-ip = mdsreadsignal(shotno,'pcs_east','\pcrl01');
-ip = signalcheck(ip);
+ip = signal_read(shotno, 'pcs_east', 'pcrl01');
 if ~ip.status
     return
 end

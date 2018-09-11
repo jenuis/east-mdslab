@@ -6,11 +6,10 @@ else
     tree_name = 'efit_east';
 end
 if nargin == 1
-    drsep = mdsreadsignal(shotno, tree_name, '\drsep');
-else
-    drsep = mdsreadsignal(shotno, tree_name, '\drsep', time_range);
+    time_range = [];
 end
-drsep = signalcheck(drsep);
+drsep = signal_read(shotno, tree_name, 'drsep', time_range);
+
 if ~drsep.status
     return
 end
