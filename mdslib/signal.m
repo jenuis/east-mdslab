@@ -30,7 +30,7 @@ classdef signal < mds & basehandle
     %       unbund_data = sigobj.sigunbund(node_name)
     %       sigobj.sigplot
     
-    % Xiang Liu@ASIPP 2017-912
+    % Xiang Liu@ASIPP 2017-9-12
     % jent.le@hotmail.com
     
     properties(Access = protected)

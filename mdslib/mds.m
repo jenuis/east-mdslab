@@ -66,8 +66,8 @@ classdef mds < handle
             % confirm connection to server
             mdsobj.confirm_connection
             % check arguments
-            if isempty(shotno) || shotno <= 0 || shotno > mdsobj.mdscurrentshot
-                error('Invalid shotno inputted, it should be greater than 0 and less than current shot!');
+            if isempty(shotno) || shotno <= 0
+                error('Invalid shotno inputted, it should be greater than 0!');
             end
             if ~haselement(mds.TreeNameList, tree_name)
                 error(['mds has no tree named as "', tree_name, '"!']);
