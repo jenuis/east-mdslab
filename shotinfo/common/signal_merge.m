@@ -1,4 +1,4 @@
-function signal_merged = signalmerge(signal_parent)
+function signal_merged = signal_merge(signal_parent)
 signal_merged.status = 0;
 sig_names = fieldnames(signal_parent);
 for i=1:length(sig_names)

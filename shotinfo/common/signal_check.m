@@ -1,4 +1,4 @@
-function signal = signalcheck(signal)
+function signal = signal_check(signal)
 if isobject(signal)
     signal = checkobj(signal);
 else
