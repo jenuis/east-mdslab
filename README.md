@@ -1,4 +1,4 @@
-#EAST MDSplus Lab.
+# EAST MDSplus Lab.
 
 mdslib: classes for data reading from mds server
 
