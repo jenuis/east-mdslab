@@ -1,4 +1,4 @@
-function signal = signaldownsample(signal, avg_len)
+function signal = signal_downsample(signal, avg_len)
 if nargin == 1
     avg_len = 20;
 end
