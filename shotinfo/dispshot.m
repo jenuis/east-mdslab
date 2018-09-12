@@ -1,4 +1,4 @@
-function shot_disp(shotlist)
+function dispshot(shotlist)
 %% constants
 heat_type = {'lhw', 'icrf', 'nbi', 'ech'};
 %% check arguments
