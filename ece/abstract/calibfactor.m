@@ -16,9 +16,6 @@ classdef (Abstract) calibfactor < basehandle
         cf % calibration factor
         err % clibration error
     end
-    properties(Constant, Abstract, Access = protected)
-        CalibFileName
-    end
     properties(Access = protected)
         cffilepath
     end

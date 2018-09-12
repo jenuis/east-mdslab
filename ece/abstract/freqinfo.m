@@ -18,9 +18,6 @@ classdef (Abstract) freqinfo < basehandle
         freqlist
         bandwidth
     end
-    properties(Constant, Abstract, Access = protected)
-        ParaFileName
-    end
     properties(Access = protected)
         parafilepath
     end

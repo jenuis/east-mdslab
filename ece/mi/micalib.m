@@ -12,14 +12,9 @@ classdef micalib < calibfactor
     % XiangLiu@ASIPP 2017-9-14
     % jent.le@hotmail.com
     
-    properties(Constant, Access = protected)
-        CalibFileName = fullfile('data', 'micf.mat');
-    end
-    
     methods
         function mcobj = micalib(shotno)
-            mfile_dir = fileparts(mfilename('fullpath'));
-            mcobj.cffilepath = fullfile(mfile_dir, mcobj.CalibFileName);
+            mcobj.cffilepath = 'micf.mat';
             if nargin > 0
                 mcobj.shotno = shotno;
                 mcobj.load;

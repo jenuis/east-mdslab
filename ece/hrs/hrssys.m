@@ -13,15 +13,9 @@ classdef hrssys < freqinfo
     % Xiang Liu@ASIPP 2017-9-14
     % jent.le@hotmail.com
     
-    properties(Constant, Access = protected)
-    %% override constants
-        ParaFileName = fullfile('data', 'hrspara.mat');
-    end
-    
     methods
         function hsobj = hrssys(shotno)
-            mfile_dir = fileparts(mfilename('fullpath'));
-            hsobj.parafilepath = fullfile(mfile_dir, hsobj.ParaFileName);
+            hsobj.parafilepath = 'hrspara.mat';
             if nargin > 0
                 hsobj.shotno = shotno;
                 hsobj.loadsyspara;

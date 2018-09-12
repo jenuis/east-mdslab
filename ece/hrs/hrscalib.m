@@ -12,14 +12,9 @@ classdef hrscalib < calibfactor
     % XiangLiu@ASIPP 2017-9-14
     % jent.le@hotmail.com
     
-    properties(Constant, Access = protected)
-        CalibFileName = fullfile('data', 'hrscf.mat');
-    end
-    
     methods
         function hcobj = hrscalib(shotno)
-            mfile_dir = fileparts(mfilename('fullpath'));
-            hcobj.cffilepath = fullfile(mfile_dir, hcobj.CalibFileName);
+            hcobj.cffilepath = 'hrscf.mat';
             if nargin > 0
                 hcobj.shotno = shotno;
                 hcobj.load;
