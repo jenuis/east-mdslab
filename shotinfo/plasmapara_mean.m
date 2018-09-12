@@ -24,13 +24,21 @@ p_names = {
 
 for i=1:length(f_names)
     fname = f_names{i};
-    shot_para.(fname) = mean(shot_para.(fname),'omitnan');
+    if fieldexist(shot_para, fname)
+        shot_para.(fname) = mean(shot_para.(fname),'omitnan');
+    else
+        shot_para.(fname) = nan;
+    end
 end
 
 for i=1:length(p_names)
     pname = p_names{i};
-    tmp_val = shot_para.(pname);
-    tmp_val = tmp_val(tmp_val > LeastPow);
+    if fieldexist(shot_para, pname)
+        tmp_val = shot_para.(pname);
+        tmp_val = tmp_val(tmp_val > LeastPow);
+    else
+        tmp_val = 0;
+    end
     
     tmp_val = mean(tmp_val, 'omitnan');
     if isnan(tmp_val)
