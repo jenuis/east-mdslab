@@ -1,4 +1,4 @@
-function cmpshot(varargin)
+function shot_cmp(varargin)
 shotlist = [varargin{:}];
 if length(shotlist) > 3 || length(shotlist) < 1
     error('varargin should be in the range of [1 3]!');

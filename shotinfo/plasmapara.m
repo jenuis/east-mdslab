@@ -7,7 +7,7 @@ if ~ip.status
     return
 end
 flat_time = ip.flat_time;
-default_time = flat_time(1):.01:flat_time(2);
+default_time = flat_time(1):.05:flat_time(2);
 %% check arguments
 if nargin == 0
     shotno = mdscurrshot;
@@ -145,6 +145,6 @@ if ~sig.status
     return
 end
 try
-    val = signalmean(sig, t_rng);
+    val = signal_mean(sig, t_rng);
 catch
 end

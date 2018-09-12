@@ -20,7 +20,7 @@ for i=1:length(fp_names)
     for j=1:length(sp_names)
         spname = sp_names{j};
         pow_sig = aux_heat.(fpname).(spname);
-        pow_sig_slice = signalslice(pow_sig, time_range);
+        pow_sig_slice = signal_slice(pow_sig, time_range);
         pow_val = mean(pow_sig_slice.data);
         if pow_val < least_power
             pow_val = 0;
@@ -57,7 +57,7 @@ for i=1:length(heat_type_names)
     pow_names = fieldnames(aux_heat.(heat_type));
     for j=1:length(pow_names)
         pow_name = pow_names{j};
-        tmp = signalslice(aux_heat.(heat_type).(pow_name), time_range);
+        tmp = signal_slice(aux_heat.(heat_type).(pow_name), time_range);
 %         heat_pow.(pow_name) = signalextract(aux_heat.(heat_type).(pow_name), time_range);
         heat_pow.(pow_name) = mean(tmp.data);
     end

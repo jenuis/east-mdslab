@@ -11,7 +11,11 @@ f_names = {
     'kappa'
     'tritop'
     'tribot'
-    'wmhd'};
+    'wmhd'
+    'R'
+    'a'
+    'vloop'
+    'prad'};
 p_names = {
     'lhw'
     'icrf'
