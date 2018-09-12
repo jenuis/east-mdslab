@@ -29,7 +29,18 @@ classdef mds < handle
     methods(Access = protected)
     %% private methods
         function connect(mdsobj)
+            if exist('mdsInfo.m', 'file')
+                status = mdsInfo;
+                if status.isConnected
+                    return
+                end
+            end
+            global isMDSConnected;
+            if isMDSConnected
+                return
+            end
             mdsconnect(mdsobj.IpAddr);
+            isMDSConnected = 1;
         end
         function new_nodename = revisenodename(~, node_name)
             if ~isempty(node_name) && ischar(node_name) && node_name(1) == '\'
@@ -38,33 +49,19 @@ classdef mds < handle
             end
             new_nodename = node_name;
         end
-        function confirm_connection(mdsobj)
-            status = mdsInfo;
-            if status.isConnected
-                return
-            end
-            mdsdisconnect
-            mdsobj.connect
-            status = mdsInfo;
-            if status.isConnected
-                return
-            end
-            error('can not reach to server!');
-        end
     end
     methods
     %% public methods
         function mdsobj = mds
             %% initialize a mds server instance
             mdsobj.connect;
-            mdsobj.confirm_connection;
         end
         function data = mdsread(mdsobj, shotno, tree_name, tdi_exp)
             %% read data from mds server
             % data = mdsobj.mdsread(shotno, tree_name, tdi_exp)
             
-            % confirm connection to server
-            mdsobj.confirm_connection
+            % connect to server
+            mdsobj.connect
             % check arguments
             if isempty(shotno) || shotno <= 0
                 error('Invalid shotno inputted, it should be greater than 0!');
@@ -101,8 +98,8 @@ classdef mds < handle
         %% get current shot of total shotlist in MDS server
         % curr_shot = mdsobj.mdscurrentshot
         
-            % confirm connection to server
-            mdsobj.confirm_connection
+            % connect to server
+            mdsobj.connect
             % get current shot
             curr_shot = mdsvalue('current_shot("east")');
         end
