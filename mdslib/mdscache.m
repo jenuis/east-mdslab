@@ -15,7 +15,7 @@ classdef mdscache < handle
     end
     methods
         function inst = mdscache(cache_path)
-            default_cache = fullfile(getenv('HOME'), 'mdscache');
+            default_cache = fullfile(getuserdir, 'mdscache');
             if nargin == 0
                 cache_path = default_cache;
             end
