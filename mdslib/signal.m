@@ -102,10 +102,12 @@ classdef signal < mds & basehandle
             cache_sig = sigobj.mdscache.cache_read(sigobj.treename,...
                 sigobj.shotno, sigobj.nodename);
             if isempty(cache_sig)
+                % check if it's multiple nodes with same time dimension
                 if isempty(sig_time)
                     sigobj.sigreadtime;
                 else
                     sigobj.time = sig_time;
+                    sigobj.timesliceindex = [];
                 end
                 sigobj.sigreaddata;
                 cache_sig.time = sigobj.time;
