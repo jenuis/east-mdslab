@@ -4,8 +4,12 @@ function [ind_rng, new_time] = timerngind(time_array, time_range)
 % if nargin == 2
 %     dtmaxtimes = 2.5;
 % end
-if isempty(time_array) || isempty(time_range) ||...
-        ~isnumeric(time_array) || ~isnumeric(time_range)...
+if isempty(time_range) || isempty(time_array)
+    ind_rng = time_range;
+    new_time = time_array;
+    return
+end
+if  ~isnumeric(time_array) || ~isnumeric(time_range)...
         || length(time_range) > 2
     error('Invalid input arguments!');
 end

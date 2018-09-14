@@ -116,6 +116,7 @@ classdef signal < mds & basehandle
                 sigobj.time = cache_sig.time;
                 sigobj.data = cache_sig.data; 
             end
+            sigobj.timesliceindex = timerngind(sigobj.time, time_range);
             sigobj.sigslice(time_range, 1);
         end
     end
