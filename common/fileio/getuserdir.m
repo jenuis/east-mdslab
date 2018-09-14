@@ -1,6 +1,6 @@
 function userDir = getuserdir
-% from https://www.mathworks.com/matlabcentral/fileexchange/15885-get-user-home-directory
-%GETUSERDIR   return the user home directory.
+% https://www.mathworks.com/matlabcentral/fileexchange/15885-get-user-home-directory
+% GETUSERDIR   return the user home directory.
 %   USERDIR = GETUSERDIR returns the user home directory using the registry
 %   on windows systems and using Java on non windows systems as a string
 %
