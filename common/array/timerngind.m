@@ -14,6 +14,9 @@ if  length(time_range) == 1
 end
 %% check time_array
 time_diff = diff(time_array);
+if isempty(time_diff)
+    error('Time array length less than 2!')
+end
 if ~isempty(find(time_diff < 0, 1))
     error('Time array is not monotonically increasing!');
 end

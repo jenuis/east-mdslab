@@ -8,12 +8,13 @@ classdef (Abstract) radte < basehandle
         te
         err
     end
-    
     properties(Constant, Access = protected)
         TreeName = 'analysis';
         ECEType = {'hrs','mi'};
     end
-    
+    properties(Access = protected)
+        load_time_range
+    end
     methods(Access = protected)
         function checkecetype(this)
             if isempty(this.ecetype) || ~haselement(radte.ECEType, this.ecetype)
@@ -22,6 +23,20 @@ classdef (Abstract) radte < basehandle
         end
         function x = getxaxis(rdobj)
             error('Child class should overide this function!');
+        end
+        function parse_load_time_range(rdobj, time_range)
+            if isempty(time_range)
+                rdobj.load_time_range = [];
+                return
+            end
+            if length(time_range) == 1 || (max(time_range)-min(time_range)) < 0.1
+                rdobj.load_time_range = [-0.05 0.05] + mean(time_range);
+            end
+        end
+        function check_load_args(rdobj, time_range)
+            rdobj.parse_load_time_range(time_range);
+            rdobj.shotnocheck;
+            rdobj.checkecetype;
         end
     end
     methods

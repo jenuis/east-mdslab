@@ -41,8 +41,8 @@ classdef spectra < radte
             if nargin == 1
                 time_range = [];
             end
-            sobj.shotnocheck;
-            sobj.checkecetype;
+            sobj.check_load_args(time_range);
+            
             % get a signal instance
             sig = signal;
             sig.shotno = sobj.shotno;
@@ -53,7 +53,7 @@ classdef spectra < radte
             sobj.freq = sig.data;
             % read spectra
             sig.nodename = ['spec_', sobj.ecetype];
-            sig.sigread(time_range);
+            sig.sigread(sobj.load_time_range);
             sobj.time = sig.time;
             sobj.spec = sig.data;
             % read spectra Error
@@ -70,23 +70,22 @@ classdef spectra < radte
             if nargin == 1
                 time_range = [];
             end
-            sobj.shotnocheck;
-            sobj.checkecetype;
+            sobj.check_load_args(time_range);
 
             % read shot para
             shot_para = shotpara(sobj.shotno);
             shot_para.readpulse;
-            if isempty(time_range)
+            if isempty(sobj.load_time_range)
                 time_slice = mean(shot_para.pulseflat);
             else
-                time_slice = mean(time_range);
+                time_slice = mean(sobj.load_time_range);
             end
             shot_para.read(time_slice);
 
             % collect system parameters
             switch sobj.ecetype
                 case 'hrs'
-                    raw_sig = hrsraw(sobj.shotno, 'tr', time_range);
+                    raw_sig = hrsraw(sobj.shotno, 'tr', sobj.load_time_range);
                     calib_fac = hrscalib(sobj.shotno);
                 case 'mi'
                     raw_sig = miraw(sobj.shotno);

@@ -47,8 +47,8 @@ classdef profile < radte
             if nargin == 1
                 time_range = [];
             end
-            pobj.shotnocheck;
-            pobj.checkecetype;
+            pobj.check_load_args(time_range);
+            
             % get a signal instance
             sig = signal;
             sig.shotno = pobj.shotno;
@@ -63,7 +63,7 @@ classdef profile < radte
             pobj.z = sig.data;
             % read Te
             sig.nodename = ['te_', pobj.ecetype];
-            sig.sigread(time_range);
+            sig.sigread(pobj.load_time_range);
             pobj.time = sig.time;
             pobj.te = sig.data;
             % read Te Error
@@ -80,16 +80,16 @@ classdef profile < radte
         if nargin == 1
             time_range = [];
         end
-        pobj.shotnocheck;
-        pobj.checkecetype;
+        pobj.check_load_args(time_range);
+        
         % read shot para
         shot_para = shotpara(pobj.shotno);
 %         shot_para.readpulse;
         shot_para.read;
-        if isempty(time_range)
+        if isempty(pobj.load_time_range)
             time_median = mean(shot_para.pulseflat);
         else
-            time_median = mean(time_range);
+            time_median = mean(pobj.load_time_range);
         end
 %         shot_para.read(time_median);
         % collect system parameters
@@ -109,7 +109,7 @@ classdef profile < radte
         % collect raw data and calibration factor
         switch pobj.ecetype
             case 'hrs'
-                raw_sig = hrsraw(pobj.shotno, 'tr', time_range,...
+                raw_sig = hrsraw(pobj.shotno, 'tr', pobj.load_time_range,...
                     'cl', channel_list);
                 calib_fac = hrscalib(pobj.shotno);
             case 'mi'
