@@ -2,6 +2,7 @@ classdef mdscache < handle
     %% mds cache class, cache data locally
     properties(Access=protected)
         cache_path
+        clean_warning = 1;
     end
     methods(Access=protected)
         function data_path = locate_datapath(inst, tree_name, shotno)
@@ -58,7 +59,11 @@ classdef mdscache < handle
             end
             
             if exist(path, 'dir')
-                answer = input(['are you sure to clean all cache under : ' path '\n [y/n]'],'s');
+                if inst.clean_warning
+                    answer = input(['are you sure to clean all cache under : ' path '\n [y/n]'],'s');
+                else
+                    answer = 'y';
+                end                
                 if answer == 'y'
                     rmdir(path, 's');
                 end
@@ -66,7 +71,11 @@ classdef mdscache < handle
             end
 
             if exist(path, 'file')
-                answer = input(['are you sure to delete "' path '"\n [y/n]'],'s');
+                if inst.clean_warning
+                    answer = input(['are you sure to delete "' path '"\n [y/n]'],'s');
+                else
+                    answer = 'y';
+                end
                 if answer == 'y'
                     delete(path);
                 end
@@ -74,6 +83,12 @@ classdef mdscache < handle
             end
             
             warning(['not exist: ' path]);
+        end
+        function cache_clean_warning(inst, show_warning)
+            if nargin == 1
+                show_warning = 1;
+            end
+            inst.clean_warning = show_warning;
         end
     end
 end
