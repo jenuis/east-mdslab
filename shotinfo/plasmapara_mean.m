@@ -1,4 +1,4 @@
-function shot_para = plasmapara_mean(shot_para)
+function shot_para = plasmapara_mean(shot_para, time_range)
 %% heat type
 LeastPow = 100/1000; %[MW]
 %% main
@@ -21,6 +21,18 @@ p_names = {
     'icrf'
     'ech'
     'nbi'};
+
+if nargin == 2
+    time_range_ind = timerngind(shot_para.time, time_range);
+    tinds = min(time_range_ind):max(time_range_ind);
+    field_names = fieldnames(shot_para);
+    for i=1:length(field_names)
+        if haselement(f_names, field_names{i}) || haselement(p_names, field_names{i}) ...
+            || strcmp(field_names{i}, 'time')
+            shot_para.(field_names{i}) = shot_para.(field_names{i})(tinds);
+        end
+    end
+end
 
 for i=1:length(f_names)
     fname = f_names{i};
