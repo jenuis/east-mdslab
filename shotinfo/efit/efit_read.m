@@ -3,7 +3,7 @@ function data = efit_read(shotno, time_range, tree_name, node_list)
 % Xiang Liu@ASIPP
 % Modified @ 2018-9-12
 %% constants
-NODE_LIST = {'\rmaxis', '\zmaxis', '\psirz', '\bdry', '\nbdry', '\r', '\z'};
+NODE_LIST = {'rmaxis', 'zmaxis', 'psirz', 'bdry', 'nbdry', 'r', 'z'};
 %% Check arguments
 default_tree = getdefaulttree;
 if nargin == 3
@@ -41,14 +41,20 @@ data.(sig.nodename) = sig.data;
 for i = 2:length(node_list)
     sig.nodename = node_list{i};
     if hastimedim(sig.nodename)
-        sig.sigread;
+        sig.sigread(time_range);
     else
-        sig_time = sig.time;
         sig.time = [];
         sig.sigread;
-        sig.time = sig_time;
     end
     data.(sig.nodename) = sig.data;
+end
+%% adjust 1D array, if not changed, efit_map will not function well. [need to improve efit_map]
+for i=1:length(node_list)
+    node_name = node_list{i};
+    val = data.(node_name);
+    if length(size(val)) == 2 && min(size(val)) == 1 && size(val, 1) == 1
+        data.(node_name) = val';
+    end
 end
 
 
@@ -68,9 +74,9 @@ default_tree = 'efit_east';
 
 function bool = hastimedim(node_name)
 switch node_name
-    case {'\psirz', '\bdry', '\nbdry',  '\rmaxis', '\zmaxis'}
+    case {'psirz', 'bdry', 'nbdry',  'rmaxis', 'zmaxis'}
         bool = 1;
-    case {'\r', '\z',}
+    case {'r', 'z',}
         bool = 0;
     otherwise
          error('mdsreadefit: unsupport node name!');   
