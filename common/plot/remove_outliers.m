@@ -1,6 +1,13 @@
-function [x, y, remove_inds] = remove_outliers(x, y, fig)
+function [x, y, remove_inds] = remove_outliers(x, y, varargin)
 %% check arguments
-if nargin == 3
+Args = struct(...
+    'tolerance', 0.01, ...
+    'fig', [] ...
+    );
+Args = parseArgs(varargin, Args);
+tolerance = Args.tolerance;
+fig = Args.fig;
+if ~isempty(fig)
     figure(fig);
 end
 %% get figure
@@ -18,10 +25,13 @@ while 1
     in_y_mean = mean(in_y);
     in_x_diff = abs(diff(in_x));
     in_y_diff = abs(diff(in_y));
-    tar_x_ind = findvalue(x, in_x_mean);
+    
+    x_inds = abs(x - in_x_mean)/diff_x < tolerance;
+    y_inds = abs(y - in_y_mean)/diff_y < tolerance;
+    selected_ind = find(x_inds & y_inds==1);
+    
     point_selected = 0;
-    if in_x_diff/diff_x < 0.01 && in_y_diff/diff_y < 0.01 && abs(in_x_mean - x(tar_x_ind))/diff_x < 0.1 && abs(in_y_mean - y(tar_x_ind))/diff_y < 0.1
-        selected_ind = round(findvalue(x,mean(in_x)));
+    if in_x_diff/diff_x < 0.05 && in_y_diff/diff_y < 0.05 && length(selected_ind) == 1
         point_selected = 1;
     end
     %% trying to removed or restore a point
