@@ -133,7 +133,7 @@ classdef signal < mds & basehandle
             %  sigobj = signal(shotno, tree_name, node_name, 'ReadNow', 0
             %                  'TimeRange', [])
             Args = struct('ReadNow', 0, 'TimeRange', [], ...
-                'UseCache', 1, 'CachePath', '');
+                'UseCache', 0, 'CachePath', '');
             Args = parseArgs(varargin, Args, {'ReadNow','UseCache'});
             % call superclasss construction fun
             sigobj = sigobj@mds;
