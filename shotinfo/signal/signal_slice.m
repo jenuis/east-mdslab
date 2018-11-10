@@ -1,4 +1,4 @@
-function signal_out = signalslice(signal_in, time_range)
+function signal_out = signal_slice(signal_in, time_range)
     time_ind = timerngind(signal_in.time, time_range);
     sub_names = fieldnames(signal_in);
     for i =1:length(sub_names)
