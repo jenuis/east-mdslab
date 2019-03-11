@@ -1,10 +1,11 @@
-function h = contourfjet(x, y, z)
-    if nargin == 1
-        h = contourf(x, 50,'linestyle','none');
-    elseif nargin == 3
-        h = contourf(x, y, z, 50,'linestyle','none');
-    else
-        error('invalid argument number!')
-    end
-    shading flat
-    colormap(jet)
+function h = contourfjet(x, y, z, N)
+if nargin < 4
+    N = 50;
+end
+if nargin == 1
+    [~, h] = contourf(x, N,'linestyle','none');
+else
+    [~, h] = contourf(x, y, z, N,'linestyle','none');
+end
+shading flat
+colormap(jet)
