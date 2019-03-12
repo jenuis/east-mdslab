@@ -27,6 +27,10 @@ classdef (Abstract) freqinfo < basehandle
         %% load system parameters
         % fqobj.loadsyspara
             fqobj.shotnocheck;
+            if ~exist(fqobj.parafilepath, 'file')
+                warning(['"' fqobj.parafilepath '" not found!'])
+                return
+            end
             load(fqobj.parafilepath);
             shot_sep_list = [freq_info{:,1}];
             tar_ind = findvaluefloor(shot_sep_list, fqobj.shotno);
