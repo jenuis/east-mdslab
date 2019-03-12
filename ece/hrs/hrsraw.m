@@ -46,11 +46,17 @@ classdef hrsraw < signal
             hrs_para = hrssys(hrobj.shotno);
             Args = struct(...
                 'ReadHigh', 0,...
-                'ChannelList', hrs_para.channelno,...
+                'ChannelList', [],...
                 'TimeRange',[]);
             Args = parseArgs(varargin, Args, {'ReadHigh'});
             if isempty(hrobj.channellist)
-                hrobj.channellist = Args.ChannelList;
+                if ~isempty(Args.ChannelList)
+                    hrobj.channellist = Args.ChannelList;
+                elseif ~isempty(hrs_para.channelno)
+                    hrobj.channellist = hrs_para.channelno;
+                else
+                    error('Can not load system info automatically, please specify "ChannelList"!')
+                end
             end
             if Args.ReadHigh
                 hrobj.treename = 'east';
