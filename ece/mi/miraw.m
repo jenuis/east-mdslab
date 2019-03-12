@@ -62,8 +62,6 @@ classdef miraw < signal
                     mrobj.channellist = Args.ChannelList;
                 elseif ~isempty(mi_para.channelno)
                     mrobj.channellist = mi_para.channelno;
-                else
-                    error('Can not load system info automatically, please specify "ChannelList"!')
                 end
             end
             mrobj.refer = signal(mrobj.shotno, mrobj.TreeName,...
