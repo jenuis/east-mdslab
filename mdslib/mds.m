@@ -102,7 +102,7 @@ classdef mds < handle
             % connect to server
             mdsobj.connect
             % get current shot
-            curr_shot = mdsvalue('current_shot("east")');
+            curr_shot = mdsvalue('current_shot("pcs_east")');
         end
         function dims = mdsdims(mdsobj, shotno, tree_name, node_name)
         %% read signal dimension
