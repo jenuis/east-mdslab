@@ -54,8 +54,6 @@ classdef hrsraw < signal
                     hrobj.channellist = Args.ChannelList;
                 elseif ~isempty(hrs_para.channelno)
                     hrobj.channellist = hrs_para.channelno;
-                else
-                    error('Can not load system info automatically, please specify "ChannelList"!')
                 end
             end
             if Args.ReadHigh
