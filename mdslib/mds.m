@@ -36,12 +36,12 @@ classdef mds < handle
                     return
                 end
             end
-            global isMDSConnected;
-            if isMDSConnected
-                return
-            end
+%            global isMDSConnected;
+%            if isMDSConnected
+%                return
+%            end
             mdsconnect(mdsobj.IpAddr);
-            isMDSConnected = 1;
+%            isMDSConnected = 1;
         end
         function new_nodename = revisenodename(~, node_name)
             if ~isempty(node_name) && ischar(node_name) && node_name(1) == '\'
