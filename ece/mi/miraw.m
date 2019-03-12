@@ -54,11 +54,17 @@ classdef miraw < signal
             end
             mi_para = misys(mrobj.shotno); 
             Args = struct(...
-                'ChannelList', mi_para.channelno,...
+                'ChannelList', [],...
                 'TimeRange',[]);
             Args = parseArgs(varargin, Args);
             if isempty(mrobj.channellist)
-                mrobj.channellist = Args.ChannelList;
+                if ~isempty(Args.ChannelList)
+                    mrobj.channellist = Args.ChannelList;
+                elseif ~isempty(mi_para.channelno)
+                    mrobj.channellist = mi_para.channelno;
+                else
+                    error('Can not load system info automatically, please specify "ChannelList"!')
+                end
             end
             mrobj.refer = signal(mrobj.shotno, mrobj.TreeName,...
                 mrobj.ReferNode, 'tr', Args.TimeRange, 'rn');
