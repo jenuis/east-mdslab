@@ -57,7 +57,7 @@ classdef mds < handle
             %% initialize a mds server instance
             mdsobj.connect;
         end
-        function data = mdsread(mdsobj, shotno, tree_name, tdi_exp)
+        function [data, status] = mdsread(mdsobj, shotno, tree_name, tdi_exp)
             %% read data from mds server
             % data = mdsobj.mdsread(shotno, tree_name, tdi_exp)
             
@@ -73,20 +73,27 @@ classdef mds < handle
             % open tree
             status = mdsopen(tree_name, shotno);
             if ~isnumeric(status) || isempty(status) || status~= shotno
-                error(['Cannot open #',...
+                warning(['Cannot open #',...
                     num2str(shotno),...
                     ' under tree "',...
                     tree_name '"!']);
+                status = 0;
+                data = [];
+                return
             end
             % read data
             disp(['mdsread: ' tdi_exp]);
             data = mdsvalue(tdi_exp);
             if ~isnumeric(data)
-                error(['Retrieve value failed for #',...
+                warning(['Retrieve value failed for #',...
                     num2str(shotno), ' under tree "',...
                     tree_name, '" with TDI expression: "',...
                     tdi_exp, '"!']);
+                status = 0;
+                data = [];
+                return
             end
+            status = 1;
         end
         function data_len = mdslen(mdsobj, shotno, tree_name, node_name)
         %% read signal size from mds server
@@ -112,15 +119,18 @@ classdef mds < handle
             node_name = mdsobj.revisenodename(node_name);
             while(1)
                 tdi_exp = ['size(\' node_name ',' num2str(i) ')'];
-                try
-                    dim_length = mdsobj.mdsread(shotno, tree_name, tdi_exp);
+                status = 1;
+                if status == 1
+                    warning('off')
+                    [dim_length, status] = mdsobj.mdsread(shotno, tree_name, tdi_exp);
+                    warning('on')
                     if isnumeric(dim_length) && ~isempty(dim_length)
                         dims(end+1) = dim_length;
                         i = i+1;
                     else
                         break
                     end
-                catch
+                else
                     break
                 end
             end
