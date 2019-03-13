@@ -45,10 +45,11 @@ classdef shotpara < basehandle
     end
     properties(Access = protected)
     %% protected properties 
-        EfitTree = 'efit_east';       
+        efit_status = nan;
     end
     properties(Constant, Access = protected)
     %% protected constant properties
+        EfitTree = 'efit_east';
         ItRange = [10500 3500]; % center and error
         PcsTree = 'pcs_east';
         IpNode = 'pcrl01';
@@ -62,6 +63,8 @@ classdef shotpara < basehandle
         GridZNode = 'z';
         RBdryMin = 'rbdrymin';
         RBdryMax = 'rbdrymax';
+        DefaultRmajor =  1.85;
+        DefaultRminor = 0.45;
     end
     methods(Access = protected)
     %% private methods
@@ -110,6 +113,10 @@ classdef shotpara < basehandle
                 time_range = time_range + [0 0.1];
             end
         end
+        function check_efit_status(spobj)
+            m = mds;
+            [~, spobj.efit_status] = m.mdsread(spobj.shotno, spobj.EfitTree, ['\' spobj.EfitTimeNode '[0]']);
+        end
     end
     methods
         function spobj = shotpara(shotno)
@@ -127,6 +134,10 @@ classdef shotpara < basehandle
             end
             spobj.readpulse;
             spobj.readit;
+            spobj.check_efit_status;
+            if ~spobj.efit_status
+                return
+            end
             spobj.readmftime;
             spobj.readmaxis(time_range);
             spobj.readmflux(time_range);
@@ -182,6 +193,12 @@ classdef shotpara < basehandle
             if ~isempty(spobj.mftime)
                 return
             end
+            if isnan(spobj.efit_status)
+                spobj.check_efit_status;
+            end
+            if ~spobj.efit_status
+                return
+            end
             sig = signal(spobj.shotno, spobj.EfitTree, spobj.EfitTimeNode);
             sig.sigreaddata;
             spobj.mftime = sig.data;
@@ -193,6 +210,12 @@ classdef shotpara < basehandle
             if nargin == 1
                 time_range = [];
             end
+            if isnan(spobj.efit_status)
+                spobj.check_efit_status;
+            end
+            if ~spobj.efit_status
+                return
+            end
             time_range = spobj.mftimerngcheck(time_range);
             spobj.maxisloc = signal(spobj.shotno, spobj.EfitTree, {spobj.RMaxisNode, spobj.ZMaxisNode}, 'rn', 'tr', time_range);
         end
@@ -202,6 +225,12 @@ classdef shotpara < basehandle
         % spobj.readmflux(time_range)
             if nargin == 1
                 time_range = [];
+            end
+            if isnan(spobj.efit_status)
+                spobj.check_efit_status;
+            end
+            if ~spobj.efit_status
+                return
             end
             time_range = spobj.mftimerngcheck(time_range);
             spobj.mfpsirz = signal(spobj.shotno, spobj.EfitTree, spobj.PsiRZNode, 'tr', time_range, 'rn');
@@ -220,6 +249,12 @@ classdef shotpara < basehandle
             end
             if nargin == 1
                 time_range = [];
+            end
+            if isnan(spobj.efit_status)
+                spobj.check_efit_status;
+            end
+            if ~spobj.efit_status
+                return
             end
             time_range = spobj.mftimerngcheck(time_range);
             psirz_norm = spobj.mfpsinorm.sigslice(time_range);
@@ -265,17 +300,18 @@ classdef shotpara < basehandle
             end
         end
         function calbt(spobj, time_range)
-            if isempty(spobj.maxisloc)
-                error('Run readmaxis first!')
-            end
             if isempty(spobj.it)
                 error('Run readit firtst!')
             end
-            if nargin == 1
-                time_range = spobj.maxisloc.time([1 end]);
+            if isa(spobj.maxisloc, 'signal')
+                if nargin == 1
+                    time_range = spobj.maxisloc.time([1 end]);
+                end
+                rmaxis_slice = spobj.maxisloc.sigslice(time_range);
+                rmaxis_mean = mean(rmaxis_slice.sigunbund(spobj.RMaxisNode));
+            else
+                rmaxis_mean = spobj.DefaultRmajor;
             end
-            rmaxis_slice = spobj.maxisloc.sigslice(time_range);
-            rmaxis_mean = mean(rmaxis_slice.sigunbund(spobj.RMaxisNode));
             spobj.bt = 4.16e-4*spobj.it.mean/rmaxis_mean;
         end
         function viewmflux(spobj, time_slice, rm_region)

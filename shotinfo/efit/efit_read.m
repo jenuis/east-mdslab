@@ -33,7 +33,9 @@ end
 %% read first node
 sig = signal(shotno, tree_name, node_list{1}, 'TR',time_range, 'rn');
 if ~signal_check(sig)
-    error('mdsreadefit: no data for this shot!\n');
+    warning('mdsreadefit: no data for this shot!\n');
+    data = [];
+    return
 end
 data.time = sig.time;
 data.(sig.nodename) = sig.data;

@@ -11,6 +11,10 @@ if nargin == 3
     time_range = efit.time([1 end]);
 else
     atime = efit_read(shotno, [], EfitTree, {});
+    if isempty(atime)
+        res = [];
+        return
+    end
     dt = median(atime.time);
     if length(time_range) == 1 || length(time_range) == 2 && abs(diff(time_range)) < dt
         time_range_new = time_range(1) + [0 dt];
