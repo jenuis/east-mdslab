@@ -10,7 +10,7 @@ flat_time = ip.flat_time;
 default_time = flat_time(1):.05:flat_time(2);
 %% check arguments
 if nargin == 0
-    shotno = mdscurrshot;
+    m = mds;shotno = m.mdscurrentshot;
     times = default_time;
 elseif nargin == 1
     times = default_time;

@@ -3,7 +3,7 @@ function dispshot(shotlist)
 heat_type = {'lhw', 'icrf', 'nbi', 'ech'};
 %% check arguments
 if nargin == 0
-    shotlist = mdscurrshot;
+    m = mds;shotlist = m.mdscurrentshot;
 end
 %% gen disp string
 disp_str = {};
