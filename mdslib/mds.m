@@ -95,12 +95,12 @@ classdef mds < handle
             end
             status = 1;
         end
-        function data_len = mdslen(mdsobj, shotno, tree_name, node_name)
+        function [data_len, status] = mdslen(mdsobj, shotno, tree_name, node_name)
         %% read signal size from mds server
         % data_len = mdsobj.mdslen(shotno, tree_name, node_name)
             node_name = mdsobj.revisenodename(node_name);
             tdi_exp = ['size(\', node_name, ')'];
-            data_len = mdsobj.mdsread(shotno, tree_name, tdi_exp);
+            [data_len, status] = mdsobj.mdsread(shotno, tree_name, tdi_exp);
         end
         function curr_shot = mdscurrentshot(mdsobj)
         %% get current shot of total shotlist in MDS server
@@ -111,7 +111,7 @@ classdef mds < handle
             % get current shot
             curr_shot = mdsvalue('current_shot("pcs_east")');
         end
-        function dims = mdsdims(mdsobj, shotno, tree_name, node_name)
+        function [dims, status] = mdsdims(mdsobj, shotno, tree_name, node_name)
         %% read signal dimension
         % dims = mdsobj.mdsdims(shotno, tree_name, node_name)
             dims=[];
@@ -133,6 +133,9 @@ classdef mds < handle
                 else
                     break
                 end
+            end
+            if ~(i == 0 && status == 0)
+                status = 1;
             end
         end
     end

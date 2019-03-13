@@ -47,22 +47,22 @@ classdef signal < mds & basehandle
     end
     methods
     %% overide parent methods
-        function data = mdsread(sigobj, tdi_exp)
+        function [data, status] = mdsread(sigobj, tdi_exp)
             %% inherited from mds class
             % data = sigobj.mdsread(tdi_exp)
-            data = mdsread@mds(sigobj, sigobj.shotno, sigobj.treename, tdi_exp);
+            [data, status] = mdsread@mds(sigobj, sigobj.shotno, sigobj.treename, tdi_exp);
         end
-        function data_len = mdslen(sigobj)
+        function [data_len, status] = mdslen(sigobj)
             %% inherited from mds class
             % data_len = sigobj.mdslen
             mdsobj = mds; % must call mdsread within mds instance
-            data_len = mdslen@mds(mdsobj, sigobj.shotno, sigobj.treename, sigobj.nodename);
+            [data_len, status] = mdslen@mds(mdsobj, sigobj.shotno, sigobj.treename, sigobj.nodename);
         end
-        function dims = mdsdims(sigobj)
+        function [dims, status] = mdsdims(sigobj)
             %% inherited from mds class
             % dims = sigobj.mdsdims
             mdsobj = mds; % must call mdsread within mds instance
-            dims = mdsdims@mds(mdsobj, sigobj.shotno, sigobj.treename, sigobj.nodename);
+            [dims, status] = mdsdims@mds(mdsobj, sigobj.shotno, sigobj.treename, sigobj.nodename);
         end
     end
     methods(Access = protected)
