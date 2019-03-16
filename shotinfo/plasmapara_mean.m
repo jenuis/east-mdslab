@@ -22,15 +22,18 @@ p_names = {
     'ech'
     'nbi'};
 
-if nargin == 2
-    time_range_ind = timerngind(shot_para.time, time_range);
-    tinds = min(time_range_ind):max(time_range_ind);
-    field_names = fieldnames(shot_para);
-    for i=1:length(field_names)
-        if haselement(f_names, field_names{i}) || haselement(p_names, field_names{i}) ...
-            || strcmp(field_names{i}, 'time')
-            shot_para.(field_names{i}) = shot_para.(field_names{i})(tinds);
-        end
+if nargin == 1
+    time_range = shot_para.flat_time;
+end
+
+
+time_range_ind = timerngind(shot_para.time, time_range);
+tinds = min(time_range_ind):max(time_range_ind);
+field_names = fieldnames(shot_para);
+for i=1:length(field_names)
+    if haselement(f_names, field_names{i}) || haselement(p_names, field_names{i}) ...
+        || strcmp(field_names{i}, 'time')
+        shot_para.(field_names{i}) = shot_para.(field_names{i})(tinds);
     end
 end
 
