@@ -1,8 +1,13 @@
 function it = proc_it(shotno)
 sp = shotpara(shotno);
 sp.readit
-it.name = sp.it.nodename;
-it.mean = sp.it.mean;
+try
+    it.name = sp.it.nodename;
+    it.mean = sp.it.mean;
+catch
+    it.status = 0;
+    return
+end
 if isnan(it.mean)
     it.status = 0;
 else
