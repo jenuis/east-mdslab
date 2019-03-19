@@ -102,14 +102,34 @@ classdef mds < handle
             tdi_exp = ['size(\', node_name, ')'];
             [data_len, status] = mdsobj.mdsread(shotno, tree_name, tdi_exp);
         end
-        function curr_shot = mdscurrentshot(mdsobj)
+        function curr_shot = mdscurrentshot(mdsobj, tree_name)
         %% get current shot of total shotlist in MDS server
         % curr_shot = mdsobj.mdscurrentshot
-        
+            
+            % check arguments
+            if nargin == 1
+                cand = [];
+                for i=1:length(mdsobj.TreeNameList)
+                    tree_name = mdsobj.TreeNameList{i};
+                    tmp_shot = mdsobj.mdscurrentshot(tree_name);
+                    if ~isempty(tmp_shot)
+                        cand(end+1) = tmp_shot;
+                    end
+                end
+                cand_unique = unique(cand);
+                counts = countmember(cand_unique, cand);
+                [~, max_ind] = max(counts);
+                curr_shot = cand_unique(max_ind);
+                return
+            end
             % connect to server
             mdsobj.connect
             % get current shot
-            curr_shot = mdsvalue('current_shot("pcs_east")');
+            curr_shot = mdsvalue(['current_shot("' tree_name '")']);
+            % check value
+            if ~isnumeric(curr_shot) || isnan(curr_shot)
+                curr_shot = [];
+            end
         end
         function [dims, status] = mdsdims(mdsobj, shotno, tree_name, node_name)
         %% read signal dimension
