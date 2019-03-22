@@ -33,20 +33,20 @@ classdef signal < mds & basehandle
     % Xiang Liu@ASIPP 2017-9-12
     % jent.le@hotmail.com
     
+    %% signal private properties
     properties(Access = protected)
-    %% signal properties
         timesliceindex
         mdscache
-        use_cache
     end
+    %% signal public properties
     properties
         treename
         nodename
         time
         data
     end
-    methods
     %% overide parent methods
+    methods
         function [data, status] = mdsread(sigobj, tdi_exp)
             %% inherited from mds class
             % data = sigobj.mdsread(tdi_exp)
@@ -65,8 +65,19 @@ classdef signal < mds & basehandle
             [dims, status] = mdsdims@mds(mdsobj, sigobj.shotno, sigobj.treename, sigobj.nodename);
         end
     end
+    %% static variable
+    methods (Access = protected, Static)
+        function val_out = cache_option(val_in)
+            persistent use_cache;
+            if nargin
+                use_cache = val_in;
+            end
+            val_out = use_cache;
+        end
+    end
+    %% signal private methods
     methods(Access = protected)
-    %% overide mds private methods
+        %% overide mds private methods
         function revisenodename(sigobj, single_node)
         %% inherited from mds class
             if nargin == 1
@@ -80,7 +91,7 @@ classdef signal < mds & basehandle
                 error('One nodename check is on with more than one node!');
             end
         end
-    %% private methods
+        %% private methods
         function sigdatacheck(sigobj)
             % check if data is empty
             if isempty(sigobj.data) || ~isnumeric(sigobj.data)
@@ -122,8 +133,8 @@ classdef signal < mds & basehandle
             sigobj.sigslice(time_range, 1);
         end
     end
+    %% signal public methods
     methods
-    %% public methods
         function sigobj = signal(shotno, tree_name, node_name, varargin)
             %% create an instance of signal class
             %  sigobj = signal
@@ -138,10 +149,8 @@ classdef signal < mds & basehandle
             % call superclasss construction fun
             sigobj = sigobj@mds;
             % init mds cache
-            sigobj.use_cache = Args.UseCache;
-            if sigobj.use_cache
-                sigobj.mdscache  = mdscache(Args.CachePath);
-            end
+            sigobj.cache_option(Args.UseCache);
+            sigobj.mdscache  = mdscache(Args.CachePath);
             if nargin > 0
                 % check argin
                 if nargin == 2
@@ -239,7 +248,7 @@ classdef signal < mds & basehandle
             %% single node name
             sigobj.revisenodename;
             if ischar(sigobj.nodename)
-                if sigobj.use_cache
+                if sigobj.cache_option
                     sigobj.load_cache(time_range);
                 else
                     sigobj.sigreadtime(time_range);
@@ -251,7 +260,7 @@ classdef signal < mds & basehandle
             nodename_list = sigobj.nodename;
             % read first node
             sigobj.nodename = nodename_list{1};
-            if sigobj.use_cache
+            if sigobj.cache_option
                 first_cache_sig = sigobj.load_cache(time_range);
             else
                 sigobj.sigreadtime(time_range);
@@ -266,7 +275,7 @@ classdef signal < mds & basehandle
             % read remain nodes
             for i = 2:len_nodelist
                 sigobj.nodename = nodename_list{i};
-                if sigobj.use_cache
+                if sigobj.cache_option
                     sigobj.load_cache(time_range, first_cache_sig.time); % avoid reading time again
                 else
                     sigobj.sigreaddata;
@@ -374,13 +383,13 @@ classdef signal < mds & basehandle
         end
         function cache(sigobj, option)
             if nargin == 1
-                option = double(~sigobj.use_cache);
+                option = double(~sigobj.cache_option);
             end
             if ~isempty(option) && (isnumeric(option) && option || ischar(option) && strcmpi(option, 'on'))
-                sigobj.use_cache = 1;
+                sigobj.cache_option(1);
                 disp('cache is turned on')
             else
-                sigobj.use_cache = 0;
+                sigobj.cache_option(0);
                 disp('cache is turned off')
             end
         end
