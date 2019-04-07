@@ -1,9 +1,12 @@
 %% Xiang Liu@19.3.15
 % call plasmapara and plot
-function plasmapara_plot(shotno, col_no)
+function plasmapara_plot(shotno, col_no, dt)
 %% CONSTANTS and Controls
 if nargin == 1
     col_no = 2;
+    dt = 0.05;
+elseif nargin == 2
+    dt = 0.05;
 end
 sig_list = {...
     'ip',...
@@ -20,7 +23,6 @@ sig_list = {...
     'kappa',...
     };
 row_no = ceil(length(sig_list)/col_no);
-dt = 0.05;
 fig_pos_w_s = 0;
 %% check shot and load data
 if nargin == 0
@@ -47,6 +49,9 @@ for i=1:sig_no
     sig_name = sig_list{i};
     if ~fieldexist(pp, sig_name)
         continue
+    end
+    if strcmp(sig_name, 'wmhd')
+        pp.(sig_name) = pp.(sig_name)*1e-6;
     end
     subplot_no = mod(i-1, row_no)+1;
     subplot(row_no, 1, subplot_no)
