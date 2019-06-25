@@ -28,7 +28,7 @@ for i=1:length(shotlist)
     
     for j=1:length(heat_type)
         if shot_stat.(heat_type{j})
-            tmp_str{end+1} = sprintf([heat_type{j} ':%01.2f '],shot_stat.lhw/1000);
+            tmp_str{end+1} = sprintf([heat_type{j} ':%01.2f '],shot_stat.(heat_type{j}));
         else
             tmp_str{end+1} = '          ';
         end
