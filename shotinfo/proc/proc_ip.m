@@ -16,7 +16,7 @@ if ~res
 end
 flat_time = ip.time(flat_time_ind);
 flat_mean = mean(ip.data(flat_time_ind(1):flat_time_ind(2)));
-if diff(flat_time) < least_flat_time || flat_time(1) < 1 || flat_mean < least_ip_value || max(ip.data(1:1000)) > least_ip_value/2
+if diff(flat_time) < least_flat_time || flat_time(1) < 0.7 || flat_mean < least_ip_value || max(ip.data(1:1000)) > least_ip_value/2
     ip.status = 0;
     return
 end
