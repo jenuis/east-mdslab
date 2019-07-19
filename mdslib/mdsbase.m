@@ -39,6 +39,9 @@ classdef (Abstract) mdsbase < handle
     methods(Access = protected)
     %% private methods
         function shotnocheck(inst)
+            if isempty(inst.shotno)
+                error('shotno is empty!')
+            end
             if ~isnumeric(inst.shotno)
                 error('shotno is not a numeric type!')
             end
