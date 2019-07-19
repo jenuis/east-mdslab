@@ -1,5 +1,5 @@
-classdef (Abstract) basehandle < handle
-    %BASEHANDLE is an abstract class for holding common methods 
+classdef (Abstract) mdsbase < handle
+    %MDSBASE is an abstract class for holding common methods 
     %Derived from handle
     %   Props:
     %       shotno

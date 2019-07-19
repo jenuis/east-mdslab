@@ -1,6 +1,6 @@
-classdef spec2prof < basehandle
+classdef spec2prof < mdsbase
     %SPEC2PROF hold functions for mapping freqency to major radius
-    %Derived from basehandle
+    %Derived from mdsbase
     %   Instance:
     %       spobj = spec2prof
     %   Props:

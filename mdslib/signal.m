@@ -1,6 +1,6 @@
-classdef signal < mds & basehandle
+classdef signal < mds & mdsbase
     %SIGNAL class which bundles time and data properties of a mds signal
-    %Derived from mds and basehandle
+    %Derived from mds and mdsbase
     %   Instance:
     %       sigobj = signal
     %       sigobj = signal(shotno)

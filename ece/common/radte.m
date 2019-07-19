@@ -1,6 +1,6 @@
-classdef (Abstract) radte < basehandle
+classdef (Abstract) radte < mdsbase
     %RADTE is a abstract class for ECE radiation Te
-    %Derived from basehandle
+    %Derived from mdsbase
     
     properties
         ecetype

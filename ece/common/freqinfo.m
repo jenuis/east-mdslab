@@ -1,6 +1,6 @@
-classdef (Abstract) freqinfo < basehandle
+classdef (Abstract) freqinfo < mdsbase
     %HRSSYS hold informations of hrs system
-    %Derived from basehandle
+    %Derived from mdsbase
     %   Props:
     %       shotno
     %       channelno

@@ -1,6 +1,6 @@
-classdef (Abstract) calibfactor < basehandle
+classdef (Abstract) calibfactor < mdsbase
     %CALIBFACTOR load calibration factor of ece system
-    %Derived from basehandle
+    %Derived from mdsbase
     %   Props:
     %       shotno
     %       cf

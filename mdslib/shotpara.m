@@ -1,6 +1,6 @@
-classdef shotpara < basehandle
+classdef shotpara < mdsbase
     %SHOTPARA collects plasma parameter for one shot
-    %Derived from basehandle
+    %Derived from mdsbase
     %   Instance:
     %       spobj = shotpara
     %       spobj = shotpara(shotno)
