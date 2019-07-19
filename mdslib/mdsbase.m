@@ -4,7 +4,7 @@ classdef (Abstract) mdsbase < handle
     %   Props:
     %       shotno
     %   Methods:
-    %       new = copy(this)
+    %       new = copy(inst)
     
     properties
         shotno
@@ -12,7 +12,7 @@ classdef (Abstract) mdsbase < handle
     
     methods
     %% public methods
-        function new = copy(this, omit_props)
+        function new = copy(inst, omit_props)
         %% deep copy of a instance
             if nargin == 1
                 omit_props = {};
@@ -22,13 +22,13 @@ classdef (Abstract) mdsbase < handle
             end
         
             % Instantiate new object of the same class.
-            new = feval(class(this));
+            new = feval(class(inst));
  
             % Copy all non-hidden properties.
-            p = properties(this);
+            p = properties(inst);
             for i = 1:length(p)
                 if ~haselement(omit_props, p{i})
-                    new.(p{i}) = this.(p{i});
+                    new.(p{i}) = inst.(p{i});
                 end
             end
         end
@@ -38,9 +38,12 @@ classdef (Abstract) mdsbase < handle
     end
     methods(Access = protected)
     %% private methods
-        function shotnocheck(this)
-            if isempty(this.shotno)
-                error('property "shotno" is empty!');
+        function shotnocheck(inst)
+            if ~isnumeric(inst.shotno)
+                error('shotno is not a numeric type!')
+            end
+            if inst.shotno <= 0
+                error('shotno should be a positive number!')
             end
         end
     end
