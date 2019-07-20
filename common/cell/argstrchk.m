@@ -1,4 +1,4 @@
-function str = argstr_extract(cell_str, str)
+function [str, cell_str] = argstrchk(cell_str, str)
 %% check arguments
 if ~ischar(str)
     error('argument str is not a string!')
@@ -13,6 +13,6 @@ for i=1:length(cell_str)
 end
 [found, ind] = haselement(cell_str, str);
 if ~found
-    error(['"' str '" is not a valid candidate input!'])
+    error(['"' str '" is not in {"' strjoin(cell_str, '", "') '"}!'])
 end
 str = cell_str{ind};
