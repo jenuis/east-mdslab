@@ -34,7 +34,7 @@ function [shotlist, filelist] = listone(Dirs, FilterStr, shotno_ind)
 if ~ischar(Dirs)
     error('Only path accepted!')
 end
-dir_list = rdir(fullfile(Dirs), FilterStr);
+dir_list = rdir(fullfile(Dirs, FilterStr));
 shotlist = [];
 filelist = {};
 for i=1:length(dir_list)
