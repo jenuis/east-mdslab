@@ -127,7 +127,7 @@ while (l<=length(args))
             else %FLAG PARAMETER
                 if (l<length(args)) %there might be a explicitly specified value for the flag
                     val=args{l+1};
-                    if isnumeric(val)
+                    if isnumeric(val) || islogical(val) %% should also consider logical type
                         if (numel(val)==1)
                             val=logical(val);
                         else
