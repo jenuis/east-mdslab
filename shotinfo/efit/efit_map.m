@@ -8,7 +8,11 @@ EfitTree = 'efit_east';
 %% read efit data
 if nargin == 3
     efit = efit_read(shotno);
-    time_range = efit.time([1 end]);
+    if fieldexist(efit, 'time') && ~isempty(efit.time)
+        time_range = efit.time([1 end]);
+    else
+        error('Not Efit data availble!')
+    end
 else
     atime = efit_read(shotno, [], EfitTree, {});
     if isempty(atime)
