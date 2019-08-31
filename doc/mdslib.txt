@@ -1,0 +1,21 @@
+[signal]
+1. read one node or multiple nodes with the same data dimensions 
+    1a: s = signal(shotno, tree_name, node_name, 'TimeRange', time_range, 'ReadNow')
+    1b: s = signal(shotno, tree_name, ndoe_name); s.sigread(time_range)
+    1c: s = signal; s.shotno =  shotno; s.treename = tree_name; s.nodename = node_name; s.sigread(time_range)
+        For example: one node, s = signal(70080, 'pcs_east', 'pcrl01', 'readnow');
+        multiple nodes, s = signal(70080, 'mpi_east', {'mpi_interfer', 'mpi_refer'}, 'timerange', [2 8], 'readnow')
+2. read multi-channel signals
+    2: s = signal(shotno, tree_name); s.sigreadbunch(format_str, channel_list)
+        For example: s = signal(70080, 'east_1'); s.sigreadbunch('hrs%02ih', [1 3 5 15 25 32])
+3. extract multiple nodes
+    3: s.sigunbund(node_name)
+        For example: s = signal(70080, 'mpi_east', {'mpi_interfer', 'mpi_refer'}, 'rn'); s.sigunbund('mpi_refer')
+4. slice signal by time range
+    4a: return a new signal: s.sigslice(time_range)
+    4b: slice s.time and s.data: s.sigslice(time_range, 1)
+5. using cache
+    5a: turn cache on or off (cache is off by default): s = signal; s.cache
+    5b: delete cache: mc = mdscache; mc.cache_clean_warning('off'); mc.cache_clean(tree_name, node_name, shotno);
+    5c: delete cache: mc = mdscache; mc.cache_clean_warning('off'); mc.cache_clean(tree_name, node_name); 
+    5d: delete cache: mc = mdscache; mc.cache_clean_warning('off'); mc.cache_clean(tree_name); 
