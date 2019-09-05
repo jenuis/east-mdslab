@@ -62,11 +62,17 @@ function aux_heat = aux_read_2014(shotno, heat_type, exception)
 aux_heat = struct();
 %% ecrh
 if ~haselement(exception, 'ech') && haselement({'raw', 'all','ech'}, heat_type)
-    ech = signal_read(shotno, 'ecrh_east', 'pecrh1i');
+    ech = signal_read(shotno, 'ecrh_east', {'pecrh1i', 'pecrh3i'});
     if ~haselement(exception, 'pecrh1i') && fieldexist(ech, 'pecrh1i') && ech.pecrh1i.status
         pecrh1i = signal_downsample(ech.pecrh1i);
         if strcmp(heat_type, 'raw') || judge_pulse(pecrh1i)
             aux_heat.ech.pecrh1i = pecrh1i;
+        end
+    end
+    if ~haselement(exception, 'pecrh3i') && fieldexist(ech, 'pecrh3i') && ech.pecrh3i.status
+        pecrh3i = signal_downsample(ech.pecrh3i);
+        if strcmp(heat_type, 'raw') || judge_pulse(pecrh3i)
+            aux_heat.ech.pecrh3i = pecrh3i;
         end
     end
 end

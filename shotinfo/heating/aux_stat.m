@@ -103,6 +103,7 @@ function pow_info = aux_stat_2014(aux_heat, time_range)
 time_range = sort(time_range([1 end]));
 %% initialize heat_pow
 heat_pow.pecrh1i = [];
+heat_pow.pecrh3i = [];
 heat_pow.picrfii = [];
 heat_pow.picrfbi = [];
 heat_pow.plh1 = [];
@@ -114,6 +115,7 @@ time = time_range(1);
 while(time<=time_range(2))
     tmp = aux_extract(aux_heat, time);
     heat_pow.pecrh1i(end+1) = tmp.pecrh1i;
+    heat_pow.pecrh3i(end+1) = tmp.pecrh3i;
     heat_pow.picrfii(end+1) = tmp.picrfii;
     heat_pow.picrfbi(end+1) = tmp.picrfbi;
     heat_pow.nbi1(end+1) = tmp.nbi1;
@@ -138,7 +140,7 @@ for i=1:length(field_names)
     end
 end
 %% set outputs
-pow_info.ecrh = heat_pow.pecrh1i;
+pow_info.ecrh = heat_pow.pecrh1i + heat_pow.pecrh3i;
 pow_info.icrf = heat_pow.picrfii + heat_pow.picrfbi;
 pow_info.lhw = heat_pow.plh1 + heat_pow.plh2;
 pow_info.nbi = heat_pow.nbi1 + heat_pow.nbi2;

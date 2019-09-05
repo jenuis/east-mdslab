@@ -37,6 +37,7 @@ if length(time_range) == 1
 end
 %% initialize output
 heat_pow.pecrh1i = 0;
+heat_pow.pecrh3i = 0;
 heat_pow.picrfii = 0;
 heat_pow.picrfbi = 0;
 heat_pow.plhi1 = 0;
