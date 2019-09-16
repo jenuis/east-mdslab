@@ -17,5 +17,5 @@ end
 if ~isempty(legend_names)
     xlabel('Time [s]');
     ylabel('Power [MW]');
-    legend(legend_names,'location','eastoutside');
+    legend(legend_names,'location','best', 'orientation', 'horizontal');
 end
