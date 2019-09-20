@@ -17,7 +17,7 @@ if haselement({'all','hcn'}, ne_type)
     end
 end
 if haselement({'all','point'}, ne_type)
-    point = signal_read(shotno, 'east_1', '\point_n6', time_range);
+    point = signal_read(shotno, 'pcs_east', 'dfsdev2', time_range);
     if point.status
         point.mean = mean(point.data);
         if 0.8 < point.mean && point.mean < 10

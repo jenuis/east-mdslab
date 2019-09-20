@@ -95,7 +95,9 @@ for i=1:length(times)
     %% ip
     shot_para.ip(end+1) = getsigval(ip, t_rng);
     %% ne
-    if fieldexist(ne, 'hcn')
+    if fieldexist(ne, 'point')
+        ne_val = getsigval(ne.point, t_rng);
+    elseif fieldexist(ne, 'hcn')
         ne_val = getsigval(ne.hcn, t_rng);
     else
         ne_val = nan;
