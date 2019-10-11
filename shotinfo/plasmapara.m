@@ -59,7 +59,7 @@ sp.readmaxis;
 sp.calbt;
 shot_para.bt = sp.bt;
 %% time dependent
-ne = proc_ne(shotno, time_range, 'hcn');
+ne = proc_ne(shotno, time_range);
 aux_heat = aux_read(shotno);
 
 q95 = proc_q95(shotno, time_range);
@@ -95,12 +95,10 @@ for i=1:length(times)
     %% ip
     shot_para.ip(end+1) = getsigval(ip, t_rng);
     %% ne
-    if fieldexist(ne, 'point')
-        ne_val = getsigval(ne.point, t_rng);
-    elseif fieldexist(ne, 'hcn')
-        ne_val = getsigval(ne.hcn, t_rng);
-    else
+    if isempty(ne.meas)
         ne_val = nan;
+    else
+        ne_val = getsigval(ne.(ne.meas), t_rng);
     end
     shot_para.ne(end+1) = ne_val;
     %% power
