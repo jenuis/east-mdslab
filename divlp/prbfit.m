@@ -259,9 +259,9 @@ classdef prbfit
             fit_res.fval = fval;
         end
         
-        function fitdata_plot(fit_data, fit_res)
+        function fig = fitdata_plot(fit_data, fit_res)
             %% plot fit_data
-            errorbar(fit_data.xdata, fit_data.ydata, fit_data.yerr, 'k*', 'linewidth', 2, 'markersize', 8);
+            fig = errorbar(fit_data.xdata, fit_data.ydata, fit_data.yerr, 'k*', 'linewidth', 2, 'markersize', 8);
             set(gcf, 'color', 'w');
             set(gca, 'fontsize', 25);
 %             setfigpostion('left');
@@ -595,7 +595,7 @@ classdef prbfit
             end
         end
         
-        function fits_view(fits_res, r2_min)
+        function fig = fits_view(fits_res, r2_min)
             if nargin == 1
                 r2_min = 0.8;
             end
@@ -608,7 +608,7 @@ classdef prbfit
             inds = r2 >= r2_min;
             phy_type_latex = prbbase.prb_get_phytype(fits_res.phy_type);
             %% plot lambda
-            subplot(511)
+            fig = subplot(511);
             plot(time(inds), lam(inds), 'ks-', 'linewidth', 2, 'markersize', 8);
             set(gca, 'fontsize', 25);
 %             legend(['\lambda_{' phy_type_latex '}'])
@@ -637,12 +637,12 @@ classdef prbfit
             setfigpostion('left');
         end
         
-        function fits_profile(fits_res, t)
+        function fig = fits_profile(fits_res, t)
             time = prbfit.fits_extract(fits_res.fits, 'time');
             tind = findvalue(time, t);
             fit_data = fits_res.fits(tind).fit_data;
             fit_res  = fits_res.fits(tind).fit_res;
-            prbfit.fitdata_plot(fit_data, fit_res);
+            fig = prbfit.fitdata_plot(fit_data, fit_res);
             title(['#' num2str(fits_res.shotno) '@' num2str(t,'%3.2f') 's ' upper(fits_res.position_tag) '-' upper(strjoin(fits_res.port_name,'&'))])
         end
         
