@@ -37,6 +37,7 @@ for i=1:length(te.time)
         te.data(end+1) = pchip(ts_z, te_profile, curr_zmaxis);
     else
         warning('length(TS_Z) ~= length(TS_profile)');
+        te.time = [];
         te.data = [];
         return
     end
