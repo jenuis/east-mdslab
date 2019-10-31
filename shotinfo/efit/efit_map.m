@@ -1,11 +1,17 @@
-function res = efit_map(shotno, location_rz, map2out ,time_range, no_mapping)
+function res = efit_map(shotno, location_rz, map2out ,time_range, no_mapping, efit_tree)
 %% This function is used to caculate the psi-projected R @out mid-plane for divertor probes of a given shot.
 % Also given is Rmid_probe,Bp_probe,Bp_mid 
 % first created by L.Wang
 % last Modified by Xiang LIU @2018-9-12
 %% constants
 EfitTree = 'efit_east';
-%% read efit data
+%% check arguments and read efit data
+if nargin < 6
+    efit_tree = EfitTree;
+end
+if nargin < 5
+    no_mapping = 0;
+end
 if nargin == 3
     efit = efit_read(shotno);
     if fieldexist(efit, 'time') && ~isempty(efit.time)
@@ -14,7 +20,7 @@ if nargin == 3
         error('Not Efit data availble!')
     end
 else
-    atime = efit_read(shotno, [], EfitTree, {});
+    atime = efit_read(shotno, [], efit_tree, {});
     if isempty(atime)
         res = [];
         return
@@ -25,11 +31,7 @@ else
     else
         time_range_new = time_range;
     end
-    efit = efit_read(shotno, time_range_new, EfitTree);
-end
-%% check arguments
-if nargin < 5
-    no_mapping = 0;
+    efit = efit_read(shotno, time_range_new, efit_tree);
 end
 if isempty(time_range)
     time_range = efit.time([1 end]);

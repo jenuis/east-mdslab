@@ -1,5 +1,8 @@
-function kappa = proc_kappa(shotno, time_range)
-if nargin == 1
+function kappa = proc_kappa(shotno, time_range, efit_tree)
+if nargin < 2
     time_range = [];
 end
-kappa = signal_proc(shotno, 'efit_east', 'kappa', time_range);
+if nargin < 3
+    efit_tree = 'efit_east';
+end
+kappa = signal_proc(shotno, efit_tree, 'kappa', time_range);

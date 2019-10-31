@@ -3,6 +3,7 @@ if shotno <= 44326
     tree_name = 'efitrt_east';
 %     error('Has problems for processing 2012 campain data!')
 else
+%     tree_name = 'efit_east';
     tree_name = 'efit_east';
 end
 if nargin == 1
