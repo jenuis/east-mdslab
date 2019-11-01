@@ -259,6 +259,45 @@ classdef prbfit
             fit_res.fval = fval;
         end
         
+        function lambda_int = cal_lambda_int(fit_data, fit_res, varargin)
+            Args.Method = 'median'; % {'median', 'left', 'right'}
+            Args.Type = 'eich'; % {'eich', 'raw'}
+            Args = parseArgs(varargin, Args);
+            
+            if strcmpi(Args.Type, 'raw')
+                xdata = fit_data.xdata;
+                ydata = fit_data.ydata;
+                
+                inds = isnan(xdata) | isnan(ydata);
+                xdata(inds) = [];
+                ydata(inds) = [];
+            elseif strcmpi(Args.Type, 'eich')
+                xdata = linspace(-30*fit_res.S, 30*fit_res.lam, 5000);
+                ydata = prbfit.fun_eich(fit_res, xdata) - fit_res.bg;
+            else
+                error('Unknow Type!')
+            end
+            
+%             plot(fit_data.xdata, fit_data.ydata, 'ko')
+%             hold on
+%             plot(xdata, ydata, 'r.:')
+            
+            % cal lambda_int
+            ypeak = max(ydata);
+            switch Args.Method
+                case 'median'
+                    lambda_int = abs(trapz(xdata(:), ydata(:)))/ypeak;
+                    return
+                case 'left'
+                    lambda_int_portion = abs(diff(xdata)).*ydata(1:end-1);
+                case 'right'
+                    lambda_int_portion = abs(diff(xdata)).*ydata(2:end);
+                otherwise
+                    error('Unknow Method!')
+            end
+            lambda_int = sum(lambda_int_portion)/ypeak;
+        end
+        
         function fig = fitdata_plot(fit_data, fit_res)
             %% plot fit_data
             fig = errorbar(fit_data.xdata, fit_data.ydata, fit_data.yerr, 'k*', 'linewidth', 2, 'markersize', 8);
@@ -614,6 +653,15 @@ classdef prbfit
             r2   = prbfit.fits_extract(fits_res, 'r2');
             ymax = prbfit.fits_extract(fits_res, 'ymax');
             inds = r2 >= r2_min;
+            lamint = [];
+            for i=1:length(time)
+                if ~inds(i)
+                    continue
+                end
+                fit_data = fits_res.fits(i).fit_data; 
+                fit_res  = fits_res.fits(i).fit_res; 
+                lamint(end+1) = prbfit.cal_lambda_int(fit_data, fit_res, 'type', 'eich');
+            end
             phy_type_latex = prbbase.prb_get_phytype(fits_res.phy_type);
             phy_type = lower(strrmsymbol(fits_res.phy_type));
             if strcmpi(phy_type, 'qpar')
@@ -631,13 +679,18 @@ classdef prbfit
             plot(time(inds), S(inds), 'ks-', 'linewidth', 2, 'markersize', 8);
             set(gca, 'fontsize', 25);
             legend(['S_{' phy_type '}'])
-            %% plot R2
+            %% plot lambda_int
             subplot(513)
+            plot(time(inds), lamint, 'ks-', 'linewidth', 2, 'markersize', 8)
+            set(gca, 'fontsize', 25);
+            legend(['\lambda_{' phy_type ',int}'])
+            %% plot R2
+            subplot(514)
             plot(time(inds), r2(inds), 'ks-', 'linewidth', 2, 'markersize', 8);
             set(gca, 'fontsize', 25);
             legend('R^2')
             %% plot ymax
-            subplot(514)
+            subplot(515)
             plot(time(inds), ymax(inds), 'ks-', 'linewidth', 2, 'markersize', 8);
             set(gca, 'fontsize', 25);
             legend([phy_type_latex '_{,peak}'])
