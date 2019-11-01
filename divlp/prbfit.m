@@ -575,7 +575,15 @@ classdef prbfit
             rrsep_out = rrsep_list;
         end
                 
-        function res = fits_extract(fits, field_name)
+        function res = fits_extract(fits_res, field_name)
+            if fieldexist(fits_res, 'fits')
+                fits = fits_res.fits;
+            elseif fieldexist(fits_res,'fit_res')
+                fits = fits_res;
+            else
+                error('Unrecognized input!')
+            end
+            
             res = [];
             if haselement({'peak','lam','S','r0','bg','r2'}, field_name)
                 for i=1:length(fits)
@@ -600,11 +608,11 @@ classdef prbfit
                 r2_min = 0.88;
             end
             %% extract data
-            time = prbfit.fits_extract(fits_res.fits, 'time');
-            lam = prbfit.fits_extract(fits_res.fits, 'lam');
-            S = prbfit.fits_extract(fits_res.fits, 'S');
-            r2 = prbfit.fits_extract(fits_res.fits, 'r2');
-            ymax = prbfit.fits_extract(fits_res.fits, 'ymax');
+            time = prbfit.fits_extract(fits_res, 'time');
+            lam  = prbfit.fits_extract(fits_res, 'lam');
+            S    = prbfit.fits_extract(fits_res, 'S');
+            r2   = prbfit.fits_extract(fits_res, 'r2');
+            ymax = prbfit.fits_extract(fits_res, 'ymax');
             inds = r2 >= r2_min;
             phy_type_latex = prbbase.prb_get_phytype(fits_res.phy_type);
             phy_type = lower(strrmsymbol(fits_res.phy_type));
@@ -641,7 +649,7 @@ classdef prbfit
         end
         
         function fig = fits_profile(fits_res, t)
-            time = prbfit.fits_extract(fits_res.fits, 'time');
+            time = prbfit.fits_extract(fits_res, 'time');
             tind = findvalue(time, t);
             fit_data = fits_res.fits(tind).fit_data;
             fit_res  = fits_res.fits(tind).fit_res;
@@ -650,7 +658,7 @@ classdef prbfit
         end
         
         function fig = fits_profile_all(fits_res, time_range, subfigno)
-            time = prbfit.fits_extract(fits_res.fits, 'time');
+            time = prbfit.fits_extract(fits_res, 'time');
             if nargin < 3
                 subfigno = 20;
             end
