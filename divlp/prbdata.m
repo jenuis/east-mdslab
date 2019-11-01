@@ -10,7 +10,7 @@ classdef prbdata < prbbase
         te;
         ne;
         pe;
-        qepar;
+        qpar;
     end
     methods(Access=protected)
         function res = is_loaded(inst, phy_type)
@@ -70,7 +70,7 @@ classdef prbdata < prbbase
                     inst.load('ne', time_range);
                     inst.load('te', time_range);
                     prbdata_cell = {inst.ne, inst.te};
-                case 'qepar'
+                case 'qpar'
                     inst.load('js', time_range);
                     inst.load('te', time_range);
                     prbdata_cell = {inst.js, inst.te};

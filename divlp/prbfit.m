@@ -597,7 +597,7 @@ classdef prbfit
         
         function fig = fits_view(fits_res, r2_min)
             if nargin == 1
-                r2_min = 0.8;
+                r2_min = 0.88;
             end
             %% extract data
             time = prbfit.fits_extract(fits_res.fits, 'time');
@@ -607,19 +607,22 @@ classdef prbfit
             ymax = prbfit.fits_extract(fits_res.fits, 'ymax');
             inds = r2 >= r2_min;
             phy_type_latex = prbbase.prb_get_phytype(fits_res.phy_type);
+            phy_type = lower(strrmsymbol(fits_res.phy_type));
+            if strcmpi(phy_type, 'qpar')
+                phy_type_latex = 'q_{//}';
+                phy_type = 'q';
+            end
             %% plot lambda
             fig = subplot(511);
             plot(time(inds), lam(inds), 'ks-', 'linewidth', 2, 'markersize', 8);
             set(gca, 'fontsize', 25);
-%             legend(['\lambda_{' phy_type_latex '}'])
-            legend('\lambda')
+            legend(['\lambda_{' phy_type '}'])
             title(['#' num2str(fits_res.shotno) ' ' upper(fits_res.position_tag) '-' upper(strjoin(fits_res.port_name,'&'))])
             %% plot S
             subplot(512)
             plot(time(inds), S(inds), 'ks-', 'linewidth', 2, 'markersize', 8);
             set(gca, 'fontsize', 25);
-%             legend(['S_{' phy_type_latex '}'])
-            legend('S')
+            legend(['S_{' phy_type '}'])
             %% plot R2
             subplot(513)
             plot(time(inds), r2(inds), 'ks-', 'linewidth', 2, 'markersize', 8);

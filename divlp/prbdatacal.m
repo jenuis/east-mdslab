@@ -90,16 +90,14 @@ classdef prbdatacal < prbbase & signal
             inst.data = te.data.*ne.data*1.6e-19*1e19;
         end
         
-        function cal_qepar(inst)
+        function cal_qpar(inst)
+            gamma = 7; % gamma_i+gamma_e
             te = inst.prbdcell_extract('te');
-%             ne = inst.prbdcell_extract('ne');
-%             qepar_val = 0.01.*ne.data.*(te.data.^0.5).*te.data;%[MWm-2], q_||, div=gamma*nt*Cst*Te, gamma??7.
             js = inst.prbdcell_extract('js');
-            qepar_val = 7*js.data*1e4.*te.data*1e-6; %[MWm-2]
             
-            inst.phy_type = 'qepar';
+            inst.phy_type = 'qpar';
             inst.time = te.time;
-            inst.data = qepar_val;
+            inst.data = gamma*js.data*1e4.*te.data*1e-6; %[MWm-2];
         end
     end
     methods
@@ -121,8 +119,8 @@ classdef prbdatacal < prbbase & signal
                     inst.cal_ne();
                 case 'pe'
                     inst.cal_pe();
-                case 'qepar'
-                    inst.cal_qepar();
+                case 'qpar'
+                    inst.cal_qpar();
                 otherwise
                     error('Unknown derive_type!')
             end

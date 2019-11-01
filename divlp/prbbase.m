@@ -2,7 +2,7 @@ classdef prbbase < mdsbase
     properties(Access=protected, Constant)
         POS_TAG  = {'UI', 'UO', 'LI', 'LO'};
         PRB_TYPE = {'i_s', 'v_p', 'v_f'};
-        DER_TYPE = {'j_s', 'T_e', 'n_e', 'p_e', 'q_{e,par}'};
+        DER_TYPE = {'j_s', 'T_e', 'n_e', 'p_e', 'q_{par}'};
         PHY_TYPE = [prbbase.PRB_TYPE, prbbase.DER_TYPE{:}];
     end
     properties(Access=protected)
