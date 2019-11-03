@@ -642,9 +642,47 @@ classdef prbfit
             end
         end
         
-        function fig = fits_view(fits_res, r2_min)
-            if nargin == 1
-                r2_min = 0.88;
+        function fig = fits_view(fits_res, varargin)
+            %% check arguments
+            Args.R2Min = 0.88;
+            Args.LineSpec = 'ks-';
+            Args.LineWidth = 2;
+            Args.MarkerSize = 8;
+            Args.FontSize = 20;
+            Args.Figure = [];
+            Args.ShowYLabel = 1;
+            Args = parseArgs(varargin, Args);
+            %% recursive call
+            if iscell(fits_res) && length(fits_res) > 1
+                Args.LineSpec = 's-';
+                varargin = struct2vararg(Args);
+                fig = prbfit.fits_view(fits_res{1}, varargin{:});
+                fnames = {'position_tag', 'port_name', 'phy_type'};
+                legend_strs{1} = num2str(fits_res{1}.shotno); 
+                x_lims = xlim';
+                Args.ShowYLabel = 0;
+                Args.Figure = fig;
+                varargin = struct2vararg(Args);
+                for i=2:length(fits_res)
+                    for j=1:length(fnames)
+                        if ~isequal(fits_res{1}.(fnames{j}), fits_res{i}.(fnames{j}))
+                            error(['"' fnames{j} '" is not the same!'])
+                        end
+                    end
+                    fig = prbfit.fits_view(fits_res{i}, varargin{:});
+                    legend_strs{i} = num2str(fits_res{i}.shotno);
+                    x_lims(:,end+1) = xlim;
+                end
+                samexaxis('join','yal', 'alt2','xlim',[max(x_lims(1,:)) min(x_lims(2,:))]);
+                axislist = getsubplots(fig);
+                for i=1:length(axislist)
+                    subplot(axislist(i))
+                    legend(legend_strs, 'Orientation', 'horizontal', 'Location', 'best')
+                    if i==1
+                        title(['Div-LP ' upper(fits_res{1}.position_tag) '-' upper(strjoin(fits_res{1}.port_name,'&'))]);
+                    end
+                end
+                return
             end
             %% extract data
             time = prbfit.fits_extract(fits_res, 'time');
@@ -652,7 +690,7 @@ classdef prbfit
             S    = prbfit.fits_extract(fits_res, 'S');
             r2   = prbfit.fits_extract(fits_res, 'r2');
             ymax = prbfit.fits_extract(fits_res, 'ymax');
-            inds = r2 >= r2_min;
+            inds = r2 >= Args.R2Min;
             lamint = [];
             for i=1:length(time)
                 if ~inds(i)
@@ -668,35 +706,41 @@ classdef prbfit
                 phy_type_latex = 'q_{//}';
                 phy_type = 'q';
             end
-            %% plot lambda
-            fig = subplot(511);
-            plot(time(inds), lam(inds), 'ks-', 'linewidth', 2, 'markersize', 8);
-            set(gca, 'fontsize', 25);
-            legend(['\lambda_{' phy_type '}'])
-            title(['#' num2str(fits_res.shotno) ' ' upper(fits_res.position_tag) '-' upper(strjoin(fits_res.port_name,'&'))])
-            %% plot S
-            subplot(512)
-            plot(time(inds), S(inds), 'ks-', 'linewidth', 2, 'markersize', 8);
-            set(gca, 'fontsize', 25);
-            legend(['S_{' phy_type '}'])
-            %% plot lambda_int
-            subplot(513)
-            plot(time(inds), lamint, 'ks-', 'linewidth', 2, 'markersize', 8)
-            set(gca, 'fontsize', 25);
-            legend(['\lambda_{' phy_type ',int}'])
-            %% plot R2
-            subplot(514)
-            plot(time(inds), r2(inds), 'ks-', 'linewidth', 2, 'markersize', 8);
-            set(gca, 'fontsize', 25);
-            legend('R^2')
-            %% plot ymax
-            subplot(515)
-            plot(time(inds), ymax(inds), 'ks-', 'linewidth', 2, 'markersize', 8);
-            set(gca, 'fontsize', 25);
-            legend([phy_type_latex '_{,peak}'])
-            %% decoration
-            samexaxis('join', 'ytac');
-            xlabel('Time')
+            %% plot
+            x = time(inds);
+            ylist = {lam(inds), S(inds), lamint, r2(inds), ymax(inds)};
+            ylabel_list = {...
+                ['a) \lambda_{' phy_type '} [mm]'],...
+                ['b) S_{' phy_type '} [mm]'],...
+                ['c) \lambda_{' phy_type ',int} [mm]'],...
+                'd) R^2',...
+                ['e) ' phy_type_latex '_{,peak}']};
+            if isempty(Args.Figure)
+                fig = figure(gcf);
+            else
+                fig = figure(Args.Figure);
+                axislist = getsubplots;
+            end
+            for i=1:length(ylist)
+                if isempty(Args.Figure)
+                    subplot(5,1,i)
+                else
+                    subplot(axislist(i))
+                end
+                hold on
+                plot(x, ylist{i},  Args.LineSpec, 'linewidth', Args.LineWidth, 'markersize', Args.MarkerSize);
+                hold off
+                set(gca, 'fontsize', Args.FontSize);
+                if i==1
+                    title(['#' num2str(fits_res.shotno) ' ' upper(fits_res.position_tag) '-' upper(strjoin(fits_res.port_name,'&'))])
+                end
+                if Args.ShowYLabel
+                    text(0.05, 0.75, ylabel_list{i}, 'unit', 'normalized', 'color', 'r', 'fontsize', Args.FontSize);
+                end
+            end
+            samexaxis('join','yal', 'alt2');
+            xlabel('Time [s]')
+            xlim([min(x) max(x)])
             set(gcf, 'color', 'w');
             setfigpostion('left');
         end
