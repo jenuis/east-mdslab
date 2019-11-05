@@ -642,6 +642,14 @@ classdef prbfit
             end
         end
         
+        function [fits_bit, fnames] = fits_bit(fits_res1, fits_res2)
+            fnames = {'shotno', 'position_tag', 'port_name', 'phy_type'};
+            fits_bit = false(1, length(fnames));
+            for i=1:length(fnames)
+                fits_bit(i) = isequal(fits_res1.(fnames{i}), fits_res2.(fnames{i}));
+            end
+        end
+        
         function fig = fits_view(fits_res, varargin)
             %% check arguments
             Args.R2Min = 0.88;
@@ -654,23 +662,42 @@ classdef prbfit
             Args = parseArgs(varargin, Args);
             %% recursive call
             if iscell(fits_res) && length(fits_res) > 1
+                %% plot first element
                 Args.LineSpec = 's-';
                 varargin = struct2vararg(Args);
                 fig = prbfit.fits_view(fits_res{1}, varargin{:});
-                fnames = {'position_tag', 'port_name', 'phy_type'};
-                legend_strs{1} = num2str(fits_res{1}.shotno); 
                 x_lims = xlim';
+                [fits_bit, fnames] = prbfit.fits_bit(fits_res{1}, fits_res{2}); 
+                if ~fits_bit(4)
+                    error('phy_type is not the same!')
+                end
+                if sum(fits_bit(1:3)) ~= 2
+                    error('{"shotno", "position_tag", "port_name"} can only allow one element be different!')
+                end
+                ind = findvalue(fits_bit, false);
+                val = fits_res{1}.(fnames{ind});
+                if isnumeric(val); val = num2str(val); end
+                if iscell(val); val = strjoin(val,''); end
+                legend_strs{1} = val;
+                tit = {...
+                    num2str(fits_res{1}.shotno, '#%i'),...
+                    upper(fits_res{1}.position_tag),...
+                    ['[' upper(strjoin(fits_res{1}.port_name,'&')) ']']};
+                tit = tit(fits_bit(1:3));
+                tit = strjoin(tit, ' ');
+                %% plot the rest
                 Args.ShowYLabel = 0;
                 Args.Figure = fig;
                 varargin = struct2vararg(Args);
                 for i=2:length(fits_res)
-                    for j=1:length(fnames)
-                        if ~isequal(fits_res{1}.(fnames{j}), fits_res{i}.(fnames{j}))
-                            error(['"' fnames{j} '" is not the same!'])
-                        end
+                    if ~isequal(fits_bit, prbfit.fits_bit(fits_res{1}, fits_res{i}))
+                        error(['fits_bit is not the same for the ' num2str(i) ' element!'])
                     end
                     fig = prbfit.fits_view(fits_res{i}, varargin{:});
-                    legend_strs{i} = num2str(fits_res{i}.shotno);
+                    val = fits_res{i}.(fnames{ind});
+                    if isnumeric(val); val = num2str(val); end
+                    if iscell(val); val = strjoin(val,''); end
+                    legend_strs{i} = val;
                     x_lims(:,end+1) = xlim;
                 end
                 samexaxis('join','yal', 'alt2','xlim',[max(x_lims(1,:)) min(x_lims(2,:))]);
@@ -679,7 +706,7 @@ classdef prbfit
                     subplot(axislist(i))
                     legend(legend_strs, 'Orientation', 'horizontal', 'Location', 'best')
                     if i==1
-                        title(['Div-LP ' upper(fits_res{1}.position_tag) '-' upper(strjoin(fits_res{1}.port_name,'&'))]);
+                        title(['Div-LP ' tit]);
                     end
                 end
                 return
