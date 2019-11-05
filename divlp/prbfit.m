@@ -708,6 +708,9 @@ classdef prbfit
             end
             %% plot
             x = time(inds);
+            if isempty(x)
+                return
+            end
             ylist = {lam(inds), S(inds), lamint, r2(inds), ymax(inds)};
             ylabel_list = {...
                 ['a) \lambda_{' phy_type '} [mm]'],...
