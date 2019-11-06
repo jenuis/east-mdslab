@@ -81,15 +81,18 @@ classdef prbdata < prbbase
             inst.(phy_type) = prbdc;
         end
         
-        function plot3d(inst, phy_type, varargin)
+        function fig = plot3d(inst, phy_type, varargin)
             if ~inst.is_loaded(phy_type)
                 error(['load "' phy_type '" first!'])
             end
             Args.YAxisType = 'dist2div';
             Args.DownSampling = 10;
             Args.OmitNan = 0;
-            Args.ShowLabels = 1;
-            Args = parseArgs(varargin, Args, {'OmitNan', 'ShowLabels'});
+            Args.ShowXLabel = 1;
+            Args.ShowYLabel = 1;
+            Args.ShowColorBar = 1;
+            Args.FontSize = 20;
+            Args = parseArgs(varargin, Args, {'OmitNan', 'ShowXLabel', 'ShowYLabel'});
             yaxis_type = argstrchk({'channel', 'dist2div'}, Args.YAxisType);
             prbd = inst.(phy_type);
             x = prbd.time;
@@ -112,11 +115,18 @@ classdef prbdata < prbbase
                 y(inds_bad) = [];
                 z(inds_bad,:) = [];
             end
+            fig = figure(gcf);
             contourfjet(x, y, z);
-            if Args.ShowLabels
+            if Args.ShowXLabel
                 xlabel('Time [s]')
+            end
+            if Args.ShowYLabel
                 ylabel(yaxis_type)
             end
+            if Args.ShowColorBar
+                colorbar;
+            end
+            set(gca, 'fontsize', Args.FontSize);
         end
         
         function switch_tree(inst)
