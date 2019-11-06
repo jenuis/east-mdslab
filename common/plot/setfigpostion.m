@@ -10,6 +10,10 @@ else
                 fig_size = [.5 .0 .5 1];
             case 'full'
                 fig_size = [0 0 1 1];
+            case 'middle'
+                fig_size = [0.25 0 .5 1];
+            otherwise
+                error('Unknow fig postion!')
         end
     elseif isnumeric(position) && length(position)==4
         fig_size = position;
