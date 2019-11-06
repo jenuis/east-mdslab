@@ -702,13 +702,16 @@ classdef prbfit
                 end
                 samexaxis('join','yal', 'alt2','xlim',[max(x_lims(1,:)) min(x_lims(2,:))]);
                 axislist = getsubplots(fig);
-                for i=1:length(axislist)
-                    subplot(axislist(i))
-                    legend(legend_strs, 'Orientation', 'horizontal', 'Location', 'best')
-                    if i==1
-                        title(['Div-LP ' tit]);
-                    end
-                end
+%                 for i=1:length(axislist)
+%                     subplot(axislist(i))
+%                     legend(legend_strs, 'Orientation', 'horizontal', 'Location', 'best')
+%                     if i==1
+%                         title(['Div-LP ' tit]);
+%                     end
+%                 end
+                subplot(axislist(1));
+                legend(legend_strs, 'Orientation', 'horizontal', 'Location', 'best');
+                title(['Div-LP ' tit]);
                 return
             end
             %% extract data
@@ -735,7 +738,7 @@ classdef prbfit
             end
             %% plot
             x = time(inds);
-            if isempty(x)
+            if length(x) < 3
                 return
             end
             ylist = {lam(inds), S(inds), lamint, r2(inds), ymax(inds)};

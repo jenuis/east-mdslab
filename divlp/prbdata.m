@@ -81,21 +81,42 @@ classdef prbdata < prbbase
             inst.(phy_type) = prbdc;
         end
         
-        function plot3d(inst, phy_type, yaxis_type)
+        function plot3d(inst, phy_type, varargin)
             if ~inst.is_loaded(phy_type)
                 error(['load "' phy_type '" first!'])
             end
-            if nargin == 2
-                yaxis_type = 'dist2div';
-            end
-            if nargin == 3
-                yaxis_type = argstrchk({'channel', 'dist2div'}, yaxis_type);
-            end
+            Args.YAxisType = 'dist2div';
+            Args.DownSampling = 10;
+            Args.OmitNan = 0;
+            Args.ShowLabels = 1;
+            Args = parseArgs(varargin, Args, {'OmitNan', 'ShowLabels'});
+            yaxis_type = argstrchk({'channel', 'dist2div'}, Args.YAxisType);
             prbd = inst.(phy_type);
             x = prbd.time;
             y = inst.prb_extract_distinfo(yaxis_type);
             z = prbd.data;
+            ind = findvalue(x, 0);
+            x = x(ind:end);
+            z = z(:,ind:end);
+            if Args.DownSampling > 1
+                x = downsamplebymean(x, Args.DownSampling);
+                z = downsamplebymean(z, Args.DownSampling);
+            end
+            if Args.OmitNan
+                inds_bad = [];
+                for i=1:size(z, 1)
+                    if sum(isnan(z(i,:)))
+                        inds_bad = i;
+                    end
+                end
+                y(inds_bad) = [];
+                z(inds_bad,:) = [];
+            end
             contourfjet(x, y, z);
+            if Args.ShowLabels
+                xlabel('Time [s]')
+                ylabel(yaxis_type)
+            end
         end
         
         function switch_tree(inst)
