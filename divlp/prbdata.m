@@ -129,6 +129,44 @@ classdef prbdata < prbbase
             set(gca, 'fontsize', Args.FontSize);
         end
         
+        function fig = plot2d(inst, phy_type, times, varargin)
+            if ~inst.is_loaded(phy_type)
+                error(['load "' phy_type '" first!'])
+            end
+            Args.YAxisType = 'dist2div';
+            Args.AvgTime = 0.05;
+            Args.MarkerSize = 8;
+            Args.LineWidth = 2;
+            Args.FontSize = 20;
+            Args = parseArgs(varargin, Args);
+            yaxis_type = argstrchk({'channel', 'dist2div'}, Args.YAxisType);
+            prbd = inst.(phy_type);
+            x = prbd.time;
+            y = inst.prb_extract_distinfo(yaxis_type);
+            z = prbd.data;
+            dt = mean(diff(x));
+            len = ceil(Args.AvgTime/dt/2);
+            fig = figure(gcf);
+            legend_str = {};
+            for i=1:length(times)
+                t = times(i);
+                if t > x(end)-Args.AvgTime || t < x(1)+Args.AvgTime
+                    warning('time is out of range, be skipped!')
+                    continue
+                end
+                ind = findvalue(x, t);
+                z_val = mean(z(:,(ind-len):(ind+len)),2,'omitnan');
+                z_err = std(z(:,(ind-len):(ind+len)),0,2,'omitnan');
+                errorbar(y, z_val, z_err, 's', 'markersize',Args.MarkerSize, 'linewidth', Args.LineWidth);
+                hold on
+                legend_str{end+1} = num2str(t,'t=%.2fs');
+            end
+            set(gca, 'fontsize', Args.FontSize);
+            xlabel(yaxis_type)
+            ylabel(prbd.prb_get_phytype(phy_type))
+            legend(legend_str)
+        end
+        
         function switch_tree(inst)
             inst.tree_switched = ~inst.tree_switched;
         end
