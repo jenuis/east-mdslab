@@ -1,13 +1,16 @@
 classdef prbfit
     methods(Static)
-        function efit_info = gen_efitinfo(prbd)
+        function efit_info = gen_efitinfo(prbd, efit_tree)
             %% check arguments
             if ~isa(prbd, 'prbdataraw') && ~isa(prbd, 'prbdatacal')
                 error('prbd should be prbdataraw or prbdatacal type!')
             end
+            if nargin < 2
+                efit_tree = 'efit_east';
+            end
             %% gen efit info
             shotno = prbd.shotno;
-            efit_info = efit_map(shotno, prbd.prb_extract_distinfo('rz'), 1);
+            efit_info = efit_map(shotno, prbd.prb_extract_distinfo('rz'), 1, [], 0, efit_tree);
             efit_info.shotno = shotno;
             efit_info.position_tag = prbd.prb_get_postag();
             efit_info.port_name = prbd.prb_get_portname();
@@ -329,8 +332,10 @@ classdef prbfit
             set(ax, 'linewidth', 2);
             hold off
             %% disp fitting results
+            lam_int = prbfit.cal_lambda_int(fit_data, fit_res);
             fitres_str = {['\lambda = ' num2str(fit_res.lam,'%3.2f') ' [mm]']};
             fitres_str{end+1} = ['S = ' num2str(fit_res.S,'%3.2f') ' [mm]'];
+            fitres_str{end+1} = ['\lambda_{int} = ' num2str(lam_int,'%3.2f') ' [mm]'];
             fitres_str{end+1} = ['R^2 = ' num2str(fit_res.r2,'%1.2f')];
             text(diff(xlim)*0.05+min(xlim),diff(ylim)*0.75+min(ylim), ...
                 fitres_str, 'fontsize', 20, 'color', 'r');
@@ -411,13 +416,15 @@ classdef prbfit
                 'ZeroBg', 0, ...
                 'MsParallel', 0, ...
                 'MsStartNo', 24, ...
+                'FitBdry', [1000 100 100 50 100; 0 0 0 -50 -100], ...
                 'AvgTime', 0.05, ...
                 'TimeSlices', []);
             Args = parseArgs(varargin, Args, {'ZeroBg', 'MsParallel'});
             fit_cfg = {...
                     'ZeroBg', Args.ZeroBg, ...
                     'MsParallel', Args.MsParallel, ...
-                    'MsStartNo', Args.MsStartNo};
+                    'MsStartNo', Args.MsStartNo,...
+                    'FitBdry', Args.FitBdry};
             %% gen time_slices
             if cmb
                 prbd_1st = prbd{1};
@@ -679,10 +686,14 @@ classdef prbfit
                 if isnumeric(val); val = num2str(val); end
                 if iscell(val); val = strjoin(val,''); end
                 legend_strs{1} = val;
+                portname_tag = upper(strjoin(fits_res{1}.port_name,'&'));
+                if ~isempty(portname_tag)
+                    portname_tag = ['[' portname_tag  ']'];
+                end
                 tit = {...
                     num2str(fits_res{1}.shotno, '#%i'),...
                     upper(fits_res{1}.position_tag),...
-                    ['[' upper(strjoin(fits_res{1}.port_name,'&')) ']']};
+                    portname_tag};
                 tit = tit(fits_bit(1:3));
                 tit = strjoin(tit, ' ');
                 %% plot the rest
@@ -765,7 +776,12 @@ classdef prbfit
                 hold off
                 set(gca, 'fontsize', Args.FontSize);
                 if i==1
-                    title(['#' num2str(fits_res.shotno) ' ' upper(fits_res.position_tag) '-' upper(strjoin(fits_res.port_name,'&'))])
+                    tit = ['#' num2str(fits_res.shotno) ' ' upper(fits_res.position_tag)];
+                    portname_tag = upper(strjoin(fits_res.port_name,'&'));
+                    if ~isempty(portname_tag)
+                        tit = [tit '-' portname_tag];
+                    end
+                    title(tit)
                 end
                 if Args.ShowYLabel
                     text(0.05, 0.75, ylabel_list{i}, 'unit', 'normalized', 'color', 'r', 'fontsize', Args.FontSize);
@@ -831,7 +847,7 @@ classdef prbfit
                 yticks([]);
                 str = {num2str(t, 't=%.2fs')};
                 str{end+1} = strrep(str_r2, ' ','');
-                textbp(str,'fontsize',15,'color','r');
+                text(0,0.5,str,'fontsize',15,'color','r','unit','normalized');
             end
         end
     end
