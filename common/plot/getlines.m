@@ -18,6 +18,10 @@ for i=1:length(line_objs)
     end
 end
 line_objs(bad_ind) = [];
-if nargin > 1 && ~isempty(line_no)
-    line_objs = line_objs(line_no);
+if isempty(line_objs)
+    return
 end
+if nargin < 2
+    return
+end
+line_objs = line_objs(line_no);
