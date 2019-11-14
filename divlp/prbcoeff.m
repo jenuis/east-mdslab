@@ -35,23 +35,33 @@ classdef prbcoeff < prbbase
                 return
             end
             %% check coeff path
+            coeff_dirs{1} = pwd;
             if isempty(inst.coeff_path)
                 inst.coeff_path = fullfile(inst.read_config('user_path'), 'coefficient');
             end
-            coeff_dir = inst.check_coeffpath();
+            coeff_dirs{end+1} = inst.check_coeffpath();
             %% locate coeff file
-            [shotlist, filelist] = foldershotlist(coeff_dir, '*.xlsx', 1:5);
-            if isempty(shotlist)
-                warning('could not find coefficient dir!')
-                return
-            end            
-            [shotlist, sort_ind] = sort(shotlist);
-            filelist = filelist(sort_ind);
-            if shotno < shotlist(1)
-                error('No coeff for this shot!')
+            flag = 0;
+            for i=1:length(coeff_dirs)
+                coeff_dir = coeff_dirs{i};
+                [shotlist, filelist] = foldershotlist(coeff_dir, '*.xlsx', 1:5);
+                if isempty(shotlist)
+                    continue
+                end            
+                [shotlist, sort_ind] = sort(shotlist);
+                filelist = filelist(sort_ind);
+                if shotno < shotlist(1)
+                    continue
+                end
+                ind = find((shotlist - shotno) <= 0, 1, 'last');
+                coeff_file = fullfile(coeff_dir, filelist{ind});
+                flag = 1;
+                break
             end
-            ind = find((shotlist - shotno) <= 0, 1, 'last');
-            coeff_file = fullfile(coeff_dir, filelist{ind});
+            if ~flag
+                warning('could not find the coefficient file!')
+                return
+            end
             %% load coeff
             disp(['load div-prb coefficient: ' coeff_file '.xlsx'])
             [inst.coeff_val, inst.coeff_key] = xlsread(coeff_file);
