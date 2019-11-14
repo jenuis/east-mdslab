@@ -1,9 +1,10 @@
 classdef prbcoeff < prbbase
     properties(Access=protected)
         coeff_path;
+        coeff_file;
+        coeff_shotno;
         coeff_key;
         coeff_val;
-        coeff_shotno;
     end
     methods(Access=protected)
         function coeff_path = check_coeffpath(inst, coeff_path)
@@ -28,10 +29,15 @@ classdef prbcoeff < prbbase
             inst.check_coeffpath(coeff_path);
         end
         
-        function prb_load_coeff(inst)
+        function coeff = prb_load_coeff(inst, shotno)
             %% check if coeff has already been loaded
-            shotno = inst.check_shotno();
-            if ~isempty(inst.coeff_shotno) && inst.coeff_shotno == shotno
+            coeff.shotno = inst.coeff_shotno;
+            coeff.key = inst.coeff_key;
+            coeff.val = inst.coeff_val;
+            if nargin < 2
+                shotno = inst.check_shotno();
+            end
+            if ~isempty(inst.shotno) && inst.shotno == shotno && ~isempty(inst.coeff_key) && ~isempty(inst.coeff_val)
                 return
             end
             %% check coeff path
@@ -44,7 +50,7 @@ classdef prbcoeff < prbbase
             flag = 0;
             for i=1:length(coeff_dirs)
                 coeff_dir = coeff_dirs{i};
-                [shotlist, filelist] = foldershotlist(coeff_dir, '*.xlsx', 1:5);
+                [shotlist, filelist] = foldershotlist(coeff_dir, '*.xlsx*', 1:5);
                 if isempty(shotlist)
                     continue
                 end            
@@ -54,8 +60,11 @@ classdef prbcoeff < prbbase
                     continue
                 end
                 ind = find((shotlist - shotno) <= 0, 1, 'last');
-                coeff_file = fullfile(coeff_dir, filelist{ind});
+                coefffile = filelist{ind};
                 flag = 1;
+                if i == 1
+                    warning('Using coefficient in current dir!')
+                end
                 break
             end
             if ~flag
@@ -63,9 +72,42 @@ classdef prbcoeff < prbbase
                 return
             end
             %% load coeff
-            disp(['load div-prb coefficient: ' coeff_file '.xlsx'])
-            [inst.coeff_val, inst.coeff_key] = xlsread(coeff_file);
-            inst.coeff_shotno = shotno;
+            disp(['load div-prb coefficient: ' coefffile])
+            status = xlsfinfo(coefffile);
+            if isempty(status)
+                assert(strcmpi(coefffile(end-3:end),'.mat'), 'file should be a mat file!');
+                load(coefffile);
+                inst.coeff_shotno = coeff.shotno;
+                inst.coeff_key = coeff.key;
+                inst.coeff_val = coeff.val;
+            else
+                [inst.coeff_val, inst.coeff_key] = xlsread(coefffile, 1, 'A1:B1000');
+                [~, file_name] = fileparts(coefffile);
+                inst.coeff_shotno = str2double(file_name(1:5));
+                coeff.shotno = inst.coeff_shotno;
+                coeff.key = inst.coeff_key;
+                coeff.val = inst.coeff_val;
+            end
+            inst.shotno = shotno;
+            inst.coeff_file = coefffile;
+        end
+        
+        function prb_save_coeff(inst, coeff, save2pwd)
+            if nargin < 3
+                save2pwd = 1;
+            end
+            coefffile = inst.coeff_file;
+            status = xlsfinfo(coefffile);
+            if ~isempty(status)
+                coefffile = [coefffile '.mat'];
+            end
+            assert(strcmpi(coefffile(end-3:end),'.mat'), 'file should be a mat file!');
+            [file_path, file_name] = fileparts(coefffile);
+            coefffile = strrep(coefffile, file_name(1:5), num2str(coeff.shotno));
+            if save2pwd
+                coefffile = strrep(coefffile, file_path, pwd);
+            end
+            save(coefffile, 'coeff');
         end
         
         function [coeff, label] = prb_extract_coeff(inst, probe_type)

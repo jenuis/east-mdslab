@@ -115,7 +115,7 @@ for i=1:length(u_shotlist)
     time = adata_extract(tmp_data, 'time');
     
     src_ind = find(src_shotlist == shotno, 1);
-    load(fullfile(mat_dir, src_filelist{src_ind}));
+    load(src_filelist{src_ind});
     src_time = get_fits_time(fits);
     for j=1:length(shot_ind)
         tmp_fit = fits{src_time == time(j)};
@@ -137,7 +137,7 @@ for i=1:length(u_shotlist)
     time = adata_extract(tmp_data, 'time');
     
     src_ind = find(src_shotlist == shotno, 1);
-    load(fullfile(mat_dir, src_filelist{src_ind}));
+    load(src_filelist{src_ind});
     src_time = get_fits_time(fits);
     for j=1:length(shot_ind)
         tmp_fit = fits{src_time == time(j)};

@@ -38,8 +38,9 @@ dir_list = rdir(fullfile(Dirs, FilterStr));
 shotlist = [];
 filelist = {};
 for i=1:length(dir_list)
-    [~, file_name] = fileparts(dir_list(i).name);
-    filelist{end+1} = file_name;
+    d = dir_list(i).name;
+    filelist{end+1} = d;
+    [~, file_name] = fileparts(d);
     shotlist(i) = str2double(file_name(shotno_ind));
 end
 bad_ind = isnan(shotlist);

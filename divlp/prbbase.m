@@ -75,6 +75,9 @@ classdef prbbase < mdsbase
             if nargin == 2
                 inst.position_tag = position_tag;
             end
+            if isempty(inst.position_tag)
+                error('please call "prb_set_postag" to set attribute "position_tag"!')
+            end
             inst.position_tag = argstrchk(prbbase.POS_TAG, inst.position_tag);
             position_tag = inst.position_tag;
         end
@@ -83,20 +86,23 @@ classdef prbbase < mdsbase
             if nargin == 2
                 inst.port_name = port_name;
             end
+            if isnumeric(inst.port_name) && isempty(inst.port_name)
+                error('please call "prb_set_portname" to set attribute "port_name"!')
+            end
             inst.port_name = argstrchk(inst.prb_list_portnames(), inst.port_name);
             port_name = inst.port_name;
         end
         
         function distrib_info = check_distinfo(inst)
             if isempty(inst.distrib_info)
-                error('load distrb_info first!')
+                error('please call "prb_load_sys" to set attribute "distrb_info"!')
             end
             distrib_info = inst.distrib_info;
         end
         
         function head_area = check_headarea(inst)
             if isempty(inst.head_area)
-                error('load head_area first!')
+                error('please call "prb_load_sys" to set attribute "head_area"!')
             end
             head_area = inst.head_area;
         end
@@ -129,16 +135,20 @@ classdef prbbase < mdsbase
             end
         end
         
+        function prb_set_postag(inst, pos_tag)
+            inst.check_postag(pos_tag);
+        end
+        
         function prb_set_portname(inst, port_name)
             inst.check_portname(port_name);
         end
         
-        function portname = prb_get_portname(inst)
-            portname = inst.check_portname();
-        end
-        
         function postag = prb_get_postag(inst)
             postag = inst.check_postag();
+        end
+        
+        function portname = prb_get_portname(inst)
+            portname = inst.check_portname();
         end
         
         function prb_load_sys(inst)
