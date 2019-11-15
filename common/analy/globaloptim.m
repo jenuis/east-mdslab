@@ -1,7 +1,7 @@
 function [coeff, fval, r2, exitflag] = globaloptim(xdata, ydata, model, lb, ub, ms_startno, ms_parallel)
 %% check arguments
 if nargin == 5
-    ms_startno = 24;
+    ms_startno = 8;
     ms_parallel = 0;
 elseif nargin == 6
     ms_parallel = 0;    
