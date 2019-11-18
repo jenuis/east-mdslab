@@ -73,6 +73,9 @@ classdef mds < handle
             end
             % open tree
             status = mdsopen(tree_name, shotno);
+            if isa(status, 'MDSplus.Int32')
+                status = double(status);
+            end
             if ~isnumeric(status) || (~isempty(status) && status~= shotno)
                 warning(['Cannot open #',...
                     num2str(shotno),...
