@@ -301,11 +301,26 @@ classdef prbfit
             lambda_int = sum(lambda_int_portion)/ypeak;
         end
         
-        function fig = fitdata_plot(fit_data, fit_res)
+        function fig = fitdata_plot(fit_data, fit_res, varargin)
+            %% check arguments
+            Args.SameColor = 0;
+            Args.LineSpecData = 'k*';
+            Args.LineSpecFit = 'r';
+            Args.LineSpecSep = 'k:';
+            Args.TextColor = 'r';
+            Args.MarkerSize = 8;
+            Args.LineWidth = 2;
+            Args.FontSize = 20;
+            Args = parseArgs(varargin, Args, {'SameColor'});
             %% plot fit_data
-            fig = errorbar(fit_data.xdata, fit_data.ydata, fit_data.yerr, 'k*', 'linewidth', 2, 'markersize', 8);
+            fig = figure(gcf);
+            errorbar(fit_data.xdata, fit_data.ydata, fit_data.yerr, Args.LineSpecData, 'linewidth', Args.LineWidth, 'markersize', Args.MarkerSize);
+            if Args.SameColor
+                h = get(gca,'children');
+                color = h(1).Color;
+            end
             set(gcf, 'color', 'w');
-            set(gca, 'fontsize', 25);
+            set(gca, 'fontsize', Args.FontSize);
 %             setfigpostion('left');
             y_label = prbbase.prb_get_phytype(fit_data.ytype);
             if isequal(fit_data.xtype, 'dist2div')
@@ -326,10 +341,16 @@ classdef prbfit
             hold on
             x = linspace(min(fit_data.xdata), max(fit_data.xdata), 100);
             y = prbfit.fun_eich(fit_res, x);
-            plot(x,y,'r','linewidth', 3);
+            h = plot(x,y,Args.LineSpecFit,'linewidth', Args.LineWidth*1.25);
+            if Args.SameColor
+                set(h, 'color', color);
+            end
             %% plot r0
-            ax = vline(fit_res.r0, 'k:');
-            set(ax, 'linewidth', 2);
+            h = vline(fit_res.r0, Args.LineSpecSep);
+            set(h, 'linewidth', Args.LineWidth);
+            if Args.SameColor
+                set(h, 'color', color);
+            end
             hold off
             %% disp fitting results
             lam_int = prbfit.cal_lambda_int(fit_data, fit_res);
@@ -337,8 +358,11 @@ classdef prbfit
             fitres_str{end+1} = ['S = ' num2str(fit_res.S,'%3.2f') ' [mm]'];
             fitres_str{end+1} = ['\lambda_{int} = ' num2str(lam_int,'%3.2f') ' [mm]'];
             fitres_str{end+1} = ['R^2 = ' num2str(fit_res.r2,'%1.2f')];
-            text(diff(xlim)*0.05+min(xlim),diff(ylim)*0.75+min(ylim), ...
-                fitres_str, 'fontsize', 20, 'color', 'r');
+            h = text(diff(xlim)*0.05+min(xlim),diff(ylim)*0.75+min(ylim), ...
+                fitres_str, 'fontsize', Args.FontSize, 'color', Args.TextColor);
+            if Args.SameColor
+                set(h, 'color', color);
+            end
         end
         
         function time_slices = slice_time(time, time_slice_len)
@@ -798,12 +822,67 @@ classdef prbfit
             setfigpostion('left');
         end
         
-        function fig = fits_profile(fits_res, t)
+        function fig = fits_profile(fits_res, t, varargin)
+            if length(fits_res) == 1 && length(t) > 1 || length(fits_res) > 1 && length(t) == 1
+                flag_sc = 0;
+                flag_lsd = 0;
+                for i=1:length(varargin)
+                    if flag_sc && flag_lsd
+                        break
+                    end
+                    if ischar(varargin{i}) 
+                        if ~flag_sc && ( strcmpi(varargin{i}, 'samecolor') || strcmpi(varargin{i}, 'sc') )
+                            flag_sc = 1;
+                            continue
+                        end
+                        if ~flag_lsd && ( strcmpi(varargin{i}, 'linespecdata') || strcmpi(varargin{i}, 'lsd') )
+                            varargin{i+1} = varargin{i+1}(end);
+                            flag_lsd = 1;
+                            continue
+                        end
+                    end
+                end
+                if ~flag_sc
+                    varargin{end+1} = 'SameColor';
+                end
+                if ~flag_lsd
+                    varargin{end+1} = 'LineSpecData';
+                    varargin{end+1} = '*';
+                end
+                
+                fig = figure(gcf);
+                setfigpostion
+                if length(fits_res) == 1
+                    legend_str = {};
+                    for i=1:length(t)
+                        figure(fig);
+                        prbfit.fits_profile(fits_res, t(i), varargin{:});
+                        legend_str{end+1} = num2str(t(i), 't=%3.2fs');
+                        legend_str{end+1} = 'Fit';
+                        hold on
+                    end
+                    title(['#' num2str(fits_res.shotno) ' DivLP ' upper(fits_res.position_tag) '-' upper(strjoin(fits_res.port_name,'&'))])
+                    legend(legend_str);
+                    return
+                end
+                
+                legend_str = {};
+                for i=1:length(fits_res)
+                    figure(fig);
+                    prbfit.fits_profile(fits_res{i}, t, varargin{:});
+                    legend_str{end+1} = ['#' num2str(fits_res{i}.shotno) ' ' upper(fits_res{i}.position_tag) '-' upper(strjoin(fits_res{i}.port_name,'&'))];
+                    legend_str{end+1} = 'Fit';
+                    hold on
+                end
+                title( num2str(t,'DivLP t=%3.2fs') )
+                legend(legend_str);
+                return
+            end
             time = prbfit.fits_extract(fits_res, 'time');
             tind = findvalue(time, t);
             fit_data = fits_res.fits(tind).fit_data;
             fit_res  = fits_res.fits(tind).fit_res;
-            fig = prbfit.fitdata_plot(fit_data, fit_res);
+            fig = prbfit.fitdata_plot(fit_data, fit_res, varargin{:});
             title(['#' num2str(fits_res.shotno) '@' num2str(t,'%3.2f') 's ' upper(fits_res.position_tag) '-' upper(strjoin(fits_res.port_name,'&'))])
         end
         

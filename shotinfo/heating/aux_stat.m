@@ -48,7 +48,11 @@ for i=1:length(HeatType)
 %     pow_info.(HeatType{i}) = pow_info.(HeatType{i})/total_slice;
 
     tmp_val = pow_info.(HeatType{i});
-    tmp_val = tmp_val(tmp_val > LeastPow);
+    if strcmpi(HeatType{i}, 'nbi')
+        tmp_val = tmp_val(tmp_val > 500);
+    else
+        tmp_val = tmp_val(tmp_val > LeastPow);
+    end
     
 %     tmp_val_m = max(tmp_val)*0.8;
 
