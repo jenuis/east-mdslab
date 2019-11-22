@@ -104,6 +104,19 @@ classdef prbfit
             res = 1;
         end
         
+        function xthres = cal_xthres(xdata, divide_factor)
+            if nargin < 2
+                divide_factor = 10;
+            end
+            x_diff = diff(unique(xdata));
+            loop_no = ceil(length(x_diff)*.1);
+            for i=1:loop_no
+                [x_diff_max, ind] = max(x_diff);
+                x_diff(ind) = [];
+            end
+            xthres = x_diff_max/divide_factor;
+        end
+        
         function fit_data = fitdata_gen(prbd, xaxis, time_slice)
             %% check arguments
             if ~isnumeric(time_slice) || time_slice(end)-time_slice(1) < 0
@@ -146,56 +159,154 @@ classdef prbfit
             end
         end
         
-        function fit_data = fitdata_combine(fit_data_list)
+        function fit_data = fitdata_combine(fit_data_list, method)
+            %% check arguments
             if ~iscell(fit_data_list) && length(fit_data_list) < 2
                 error('fit_data_list should have at least two elements!')
             end
+            assert(haselement({'weighted', 'normal', 'concat'}, lower(method)), 'Combining method should be in {"weighted", "normal", "concat"}!');
+            %% concatenate
             fit_data = fit_data_list{1};
-            if fieldexist(fit_data, 'yerr')
-                error('fit_data in the list should be raw data without averaging!')
-            end
-            for i=2:length(fit_data_list)
-                if ~isequal(fit_data.xtype, fit_data_list{i}.xtype)
-                    error('xtype not match!')
+            has_yerr = fieldexist(fit_data, 'yerr');
+            if strcmpi(method, 'concat')
+                for i=2:length(fit_data_list)
+                    if ~isequal(fit_data.xtype, fit_data_list{i}.xtype)
+                        error('xtype not match!')
+                    end
+                    if ~isequal(fit_data.ytype, fit_data_list{i}.ytype)
+                        error('ytype not match!')
+                    end
+                    fit_data.xdata = [fit_data.xdata fit_data_list{i}.xdata];
+                    fit_data.ydata = [fit_data.ydata fit_data_list{i}.ydata];
+                    if has_yerr
+                        fit_data.yerr = [fit_data.yerr fit_data_list{i}.yerr];
+                    end
                 end
-                if ~isequal(fit_data.ytype, fit_data_list{i}.ytype)
-                    error('ytype not match!')
-                end
-                fit_data.xdata = [fit_data.xdata fit_data_list{i}.xdata];
-                fit_data.ydata = [fit_data.ydata fit_data_list{i}.ydata];
+                return
             end
+            %% weighted averaging
+            if strcmpi(method, 'weighted') && ~has_yerr
+                for i=1:length(fit_data_list)
+                    xthres = prbfit.cal_xthres(fit_data_list{i}.xdata);
+                    fit_data_list{i} = prbfit.fitdata_avg(fit_data_list{i}, 'xthres', xthres);
+                end
+            end
+            %% normal avraging            
+            fit_data = prbfit.fitdata_combine(fit_data_list, 'concat');
+            xthres = prbfit.cal_xthres(fit_data.xdata, 8);
+            fit_data = prbfit.fitdata_avg(fit_data, 'xthres', xthres);
         end
         
-        function fit_data = fitdata_avg(fit_data, use_median)
+        function fit_data = fitdata_avg(fit_data, varargin)
             %% check arguments
-            if nargin < 2
-                use_median = 1;
+            Args.UseMedian = 1;
+            Args.XThres = 0;
+            Args = parseArgs(varargin, Args, {'UseMedian'});
+            len = length(fit_data.xdata);
+            assert(length(fit_data.ydata)==len,'xdata and ydata should have the same length!')
+            has_yerr = fieldexist(fit_data, 'yerr');
+            avg_samex = Args.XThres == 0;
+            if has_yerr
+                avg_samex = 0;
+            end
+            if ~avg_samex && Args.XThres == 0
+                Args.XThres = prbfit.cal_xthres(fit_data.xdata, 50);
             end
             %% set funs
-            if use_median
+            if Args.UseMedian
                 fun_avg = @median;
                 fun_err = @mad;
             else
                 fun_avg = @mean;
                 fun_err = @std;
             end
-            %% average fit_data
-            x = fit_data.xdata;
-            y = fit_data.ydata;
-            x_u = unique(x); %% sorted automatically
-            
-            fit_data.xdata = x_u;
-            fit_data.ydata = [];
-            fit_data.yerr  = [];
-            for i=1:length(x_u)
-                inds = x==x_u(i);
-                fit_data.ydata(i) = fun_avg(y(inds));
-                fit_data.yerr(i)  = fun_err(y(inds));
+            %% average by the same x
+            xdata = [];
+            ydata = [];
+            yerr = [];
+            if avg_samex
+                xdata = sort(fit_data.xdata); %% sorted automatically
+                for i=1:length(xdata)
+                    inds = fit_data.xdata==xdata(i);
+                    y = fit_data.ydata(inds);
+                    ydata(end+1) = fun_avg(y);
+                    yerr(end+1)  = fun_err(y);
+                end
+            %% average by the adjacent x
+            else
+                %% sort data
+                if sum(diff(fit_data.xdata)<0)
+                    [fit_data.xdata, sort_inds] = sort(fit_data.xdata);
+                    fit_data.ydata = fit_data.ydata(sort_inds);
+                    if has_yerr
+                        fit_data.yerr  = fit_data.yerr(sort_inds);
+                    end
+                end
+                %% get inds for adjacent points            
+                inds_list = {};
+                i = 1;
+                while(i < len)
+                    xi = fit_data.xdata(i);
+                    inds = i;
+                    for j=(i+1):len
+                        xj = fit_data.xdata(j);
+                        if abs(xj-xi) > Args.XThres
+                            inds_list{end+1} = inds;
+                            break
+                        end
+                        inds(end+1) = j;
+                        i = j;
+                    end
+                    i = i+1;
+                end
+                inds_list{end+1} = inds;
+                if fit_data.xdata(end) - fit_data.xdata(end-1) > Args.XThres
+                    inds_list{end+1} = len;
+                end
+                %% average by inds
+                for i=1:length(inds_list)
+                    inds = inds_list{i};
+                    if ~has_yerr
+                        x = fit_data.xdata(inds);
+                        y = fit_data.ydata(inds);
+                        xdata(end+1) = fun_avg(x);
+                        ydata(end+1) = fun_avg(y);
+                        yerr(end+1)  = fun_err(y);
+                        continue
+                    end
+                    
+                    inds = inds(fit_data.yerr(inds) > 0);
+                    if isempty(inds)
+                        continue
+                    end
+                    
+                    x  = fit_data.xdata(inds);
+                    y  = fit_data.ydata(inds);
+                    ye = fit_data.yerr(inds);
+                    w  = y./ye; w = w./sum(w);
+
+                    xdata(end+1) = mean(x);
+                    ydata(end+1) = sum(y.*w);
+                    yerr(end+1)  = sqrt(sum((ye.*w).^2));
+                end
             end
-            %% set ymin
+            len = length(xdata);
+            if length(ydata) ~= len || length(yerr) ~= len
+                error('ydata or yerr has different length with xdata!')
+            end
+            if sum(isnan(ydata) | isnan(xdata) | isnan(yerr))
+                error('NaN inside!')
+            end
+            fit_data.xdata = xdata;
+            fit_data.ydata = ydata;
+            fit_data.yerr  = yerr;
+            %% set ymin & ymax
+%             [fit_data.ymin, ind] = min(fit_data.ydata);
+%             fit_data.ymin(2) = fit_data.yerr(ind);
+%             [fit_data.ymax, ind] = max(fit_data.ydata);
+%             fit_data.ymax(2) = fit_data.yerr(ind);
             [fit_data.ymin, ind] = min(fit_data.ydata);
             fit_data.ymin(2) = fit_data.yerr(ind);
-            %% set ymax
             [fit_data.ymax, ind] = max(fit_data.ydata);
             fit_data.ymax(2) = fit_data.yerr(ind);
         end
@@ -241,6 +352,7 @@ classdef prbfit
                 'MsStartNo', 4, ...
                 'FitBdry', [1000 100 100 50 100; 0 0 0 -50 -100]);
             Args = parseArgs(varargin, Args, {'MsParallel', 'ZeroBg'});
+            assert(sum(isnan(fit_data.ydata) | isnan(fit_data.xdata)) == 0, 'fit_data has NaN inside!');
             %% set fit boundary
             ub = Args.FitBdry(1,:);
             lb = Args.FitBdry(2,:);
@@ -332,8 +444,8 @@ classdef prbfit
             end
             xlabel(x_label)
             ylabel(y_label)
-            xlim([min(fit_data.xdata) max(fit_data.xdata)]);
-            ylim([min(fit_data.ydata -fit_data.yerr) max(fit_data.ydata+fit_data.yerr)]);
+            xlim([min(fit_data.xdata)*0.95 max(fit_data.xdata)*1.05]);
+            ylim([min(fit_data.ydata -fit_data.yerr)*0.95 max(fit_data.ydata+fit_data.yerr)*1.05]);
             if nargin == 1
                 return
             end
@@ -442,8 +554,10 @@ classdef prbfit
                 'MsStartNo', 4, ...
                 'FitBdry', [1000 100 100 50 100; 0 0 0 -50 -100], ...
                 'AvgTime', 0.05, ...
-                'TimeSlices', []);
+                'TimeSlices', [],...
+                'CombineMethod', 'weighted');
             Args = parseArgs(varargin, Args, {'ZeroBg', 'MsParallel'});
+            assert(haselement({'normal', 'weighted'}, Args.CombineMethod), 'Unrecognized Combine Method, should be "normal" or "weighted"!');
             fit_cfg = {...
                     'ZeroBg', Args.ZeroBg, ...
                     'MsParallel', Args.MsParallel, ...
@@ -492,11 +606,11 @@ classdef prbfit
                     for j=1:length(prbd)
                         fit_data_list{j} = prbfit.fitdata_gen(prbd{j}, xaxis{j}, time_slice);
                     end
-                    fit_data = prbfit.fitdata_combine(fit_data_list);
+                    fit_data = prbfit.fitdata_combine(fit_data_list, Args.CombineMethod);
                 else
                     fit_data = prbfit.fitdata_gen(prbd, xaxis, time_slice);
+                    fit_data = prbfit.fitdata_avg(fit_data);
                 end
-                fit_data = prbfit.fitdata_avg(fit_data);
                 fits(i).time     = mean(time_slice);
                 fits(i).fit_data = fit_data;
                 fits(i).fit_res  = prbfit.eichfit(fit_data, fit_cfg{:});
@@ -540,6 +654,7 @@ classdef prbfit
                 'TimeRange', [], ...
                 'TimeSlices', [], ...
                 'AvgTime', 0.05, ...
+                'CombineMethod', 'weighted',...
                 'ZeroBg', 0, ...
                 'MsParallel', 0, ...
                 'MsStartNo', 4, ...
@@ -552,6 +667,7 @@ classdef prbfit
             interp_no = Args.EfitInterpNo;
             fit_cfg = {'TimeSlices', Args.TimeSlices, ...
                     'AvgTime', Args.AvgTime, ...
+                    'CombineMethod', Args.CombineMethod,...
                     'ZeroBg', Args.ZeroBg, ...
                     'MsParallel', Args.MsParallel, ...
                     'MsStartNo', Args.MsStartNo};
@@ -854,28 +970,34 @@ classdef prbfit
                 setfigpostion
                 if length(fits_res) == 1
                     legend_str = {};
+                    y_lims = [];
                     for i=1:length(t)
                         figure(fig);
                         prbfit.fits_profile(fits_res, t(i), varargin{:});
                         legend_str{end+1} = num2str(t(i), 't=%3.2fs');
                         legend_str{end+1} = 'Fit';
                         hold on
+                        y_lims = [y_lims; ylim];
                     end
                     title(['#' num2str(fits_res.shotno) ' DivLP ' upper(fits_res.position_tag) '-' upper(strjoin(fits_res.port_name,'&'))])
                     legend(legend_str);
+                    ylim([min(y_lims(:,1)) max(y_lims(:,2))])
                     return
                 end
                 
                 legend_str = {};
+                y_lims = [];
                 for i=1:length(fits_res)
                     figure(fig);
                     prbfit.fits_profile(fits_res{i}, t, varargin{:});
                     legend_str{end+1} = ['#' num2str(fits_res{i}.shotno) ' ' upper(fits_res{i}.position_tag) '-' upper(strjoin(fits_res{i}.port_name,'&'))];
                     legend_str{end+1} = 'Fit';
                     hold on
+                    y_lims = [y_lims; ylim];
                 end
                 title( num2str(t,'DivLP t=%3.2fs') )
                 legend(legend_str);
+                ylim([min(y_lims(:,1)) max(y_lims(:,2))])
                 return
             end
             time = prbfit.fits_extract(fits_res, 'time');
