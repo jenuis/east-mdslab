@@ -31,10 +31,10 @@ if isempty(node_list)
     node_list = NODE_LIST;
 end
 %% read first node
-sig = signal(shotno, tree_name, node_list{1}, 'TR',time_range);
+sig = signal(shotno, tree_name, node_list{1});
 dispstat('', 'init');
 sig.setdisp(2);
-sig.sigread;
+sig.sigread(time_range);
 if ~signal_check(sig)
     warning('mdsreadefit: no data for this shot!\n');
     data = [];
