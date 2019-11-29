@@ -16,9 +16,9 @@ classdef signal < mds & mdsbase
     %       time
     %       data
     %   Methods (inherited from mds):
-    %       data = sigobj.mdsread(tdi_exp)
+    %       data = sigobj.mdsread(tdi_exp, disp_option)
     %       data_len = sigobj.mdslen
-    %       dims = sigobj.mdsdims
+    %       dims = sigobj.mdsdims(disp_option)
     %       curr_shot = mdsobj.mdscurrentshot
     %   Methods:
     %       sigobj.sigreadtime(time_range)
@@ -37,6 +37,7 @@ classdef signal < mds & mdsbase
     properties(Access = protected)
         timesliceindex
         mdscache
+        disp_option = 1
     end
     %% signal public properties
     properties
@@ -47,10 +48,14 @@ classdef signal < mds & mdsbase
     end
     %% overide parent methods
     methods
-        function [data, status] = mdsread(sigobj, tdi_exp)
+        function [data, status] = mdsread(sigobj, tdi_exp, disp_option)
             %% inherited from mds class
             % data = sigobj.mdsread(tdi_exp)
-            [data, status] = mdsread@mds(sigobj, sigobj.shotno, sigobj.treename, tdi_exp);
+            % data = sigobj.mdsread(tdi_exp, disp_option)
+            if nargin < 3
+                disp_option = 1;
+            end
+            [data, status] = mdsread@mds(sigobj, sigobj.shotno, sigobj.treename, tdi_exp, disp_option);
         end
         function [data_len, status] = mdslen(sigobj)
             %% inherited from mds class
@@ -58,11 +63,15 @@ classdef signal < mds & mdsbase
             mdsobj = mds; % must call mdsread within mds instance
             [data_len, status] = mdslen@mds(mdsobj, sigobj.shotno, sigobj.treename, sigobj.nodename);
         end
-        function [dims, status] = mdsdims(sigobj)
+        function [dims, status] = mdsdims(sigobj, disp_option)
             %% inherited from mds class
             % dims = sigobj.mdsdims
+            % dims = sigobj.mdsdims(disp_option)
+            if nargin < 2
+                disp_option = 1;
+            end
             mdsobj = mds; % must call mdsread within mds instance
-            [dims, status] = mdsdims@mds(mdsobj, sigobj.shotno, sigobj.treename, sigobj.nodename);
+            [dims, status] = mdsdims@mds(mdsobj, sigobj.shotno, sigobj.treename, sigobj.nodename, disp_option);
         end
     end
     %% static variable
@@ -187,7 +196,7 @@ classdef signal < mds & mdsbase
             end
             sigobj.revisenodename(1);
             tdi_exp = ['dim_of(\', sigobj.nodename, ')'];
-            sigobj.time = sigobj.mdsread(tdi_exp);
+            sigobj.time = sigobj.mdsread(tdi_exp, sigobj.disp_option);
             sigobj.timesliceindex = [1 length(sigobj.time)];
             if nargin == 2 && ~isempty(time_range)
                 if ~isnumeric(time_range)
@@ -217,7 +226,7 @@ classdef signal < mds & mdsbase
                 ind_rng = [1 total_len];
             end
             % read data dimension
-            data_dims = sigobj.mdsdims;
+            data_dims = sigobj.mdsdims(sigobj.disp_option);
             % gen slice string
             slice_str = '[';
             for i = 1:(length(data_dims)-1)
@@ -228,7 +237,7 @@ classdef signal < mds & mdsbase
                 num2str(ind_rng(2)-1),']'];
             % read data
             tdi_exp = ['data(\', sigobj.nodename, ')',slice_str];
-            sigobj.data = sigobj.mdsread(tdi_exp);
+            sigobj.data = sigobj.mdsread(tdi_exp, sigobj.disp_option);
             % transpose data if necessary
             if size(sigobj.data, 2) == 1 &&...
                     ndims(sigobj.data) == 2 &&...
@@ -244,7 +253,7 @@ classdef signal < mds & mdsbase
             % check arguments in
             if nargin == 1
                 time_range = [];
-            end
+            end      
             %% single node name
             sigobj.revisenodename;
             if ischar(sigobj.nodename)
@@ -263,6 +272,9 @@ classdef signal < mds & mdsbase
             if sigobj.cache_option
                 first_cache_sig = sigobj.load_cache(time_range);
             else
+                dispoption = sigobj.disp_option;
+                dispstat('','init');
+                sigobj.disp_option = 2;
                 sigobj.sigreadtime(time_range);
                 sigobj.sigreaddata;
             end
@@ -289,6 +301,8 @@ classdef signal < mds & mdsbase
             % store properties
             sigobj.data = data_array;
             sigobj.nodename = nodename_list_new;
+            sigobj.disp_option = dispoption;
+            dispstat('','clean');
         end
         function sigreadbunch(sigobj, node_format_str, channel_list, time_range)
         %% read signal with multiple channels
@@ -392,6 +406,9 @@ classdef signal < mds & mdsbase
                 sigobj.cache_option(0);
                 disp('cache is turned off')
             end
+        end
+        function setdisp(sigobj, option)
+            sigobj.disp_option = option;
         end
     end
 end

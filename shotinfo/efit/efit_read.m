@@ -31,7 +31,10 @@ if isempty(node_list)
     node_list = NODE_LIST;
 end
 %% read first node
-sig = signal(shotno, tree_name, node_list{1}, 'TR',time_range, 'rn');
+sig = signal(shotno, tree_name, node_list{1}, 'TR',time_range);
+dispstat('', 'init');
+sig.setdisp(2);
+sig.sigread;
 if ~signal_check(sig)
     warning('mdsreadefit: no data for this shot!\n');
     data = [];
@@ -50,6 +53,7 @@ for i = 2:length(node_list)
     end
     data.(sig.nodename) = sig.data;
 end
+dispstat('', 'clean');
 %% adjust 1D array, if not changed, efit_map will not function well. [need to improve efit_map]
 for i=1:length(node_list)
     node_name = node_list{i};

@@ -444,7 +444,7 @@ classdef prbfit
             end
             xlabel(x_label)
             ylabel(y_label)
-            xlim([min(fit_data.xdata)*0.95 max(fit_data.xdata)*1.05]);
+            xlim([min(fit_data.xdata)*0.9 max(fit_data.xdata)*1.1]);
             ylim([min(fit_data.ydata -fit_data.yerr)*0.95 max(fit_data.ydata+fit_data.yerr)*1.05]);
             if nargin == 1
                 return
@@ -596,8 +596,9 @@ classdef prbfit
             %% fit
             slice_no = length(time_slices);
             fits = struct();
-            disp_inds = linspace(1, length(time_slices), 10);
-            disp_inds = unique(round(disp_inds));
+%             disp_inds = linspace(1, length(time_slices), 10);
+%             disp_inds = unique(round(disp_inds));
+            dispstat('','init');
             for i=1:length(time_slices)
                 time_slice = time_slices{i};
                 if cmb
@@ -614,10 +615,11 @@ classdef prbfit
                 fits(i).time     = mean(time_slice);
                 fits(i).fit_data = fit_data;
                 fits(i).fit_res  = prbfit.eichfit(fit_data, fit_cfg{:});
-                if sum(disp_inds == i)
-                    disp(['fitting progress: ' num2str(100*i/slice_no,'%5.1f') '%']);
-                end
+%                 if sum(disp_inds == i)
+                    dispstat(['fitting progress: ' num2str(100*i/slice_no,'%5.1f') '%']);
+%                 end
             end
+            dispstat('','clean');
             fits_res.fits = fits;
             %% tag res
             fits_res.shotno = prbd_1st.shotno;
@@ -1043,7 +1045,8 @@ classdef prbfit
                 t = time(inds(i));
                 prbfit.fits_profile(fits_res, t);
                 axes = get(gca,'children');
-                str_r2 = axes(1).String{3};
+                str_lam = axes(1).String{3};
+                str_r2 = axes(1).String{4};
                 delete(axes(1));
                 xlabel([]);
                 ylabel([]);
@@ -1051,6 +1054,7 @@ classdef prbfit
                 xticks([]);
                 yticks([]);
                 str = {num2str(t, 't=%.2fs')};
+                str{end+1} = strrep(str_lam, ' ','');
                 str{end+1} = strrep(str_r2, ' ','');
                 text(0,0.5,str,'fontsize',15,'color','r','unit','normalized');
             end

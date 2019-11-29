@@ -24,4 +24,6 @@ end
 if nargin < 2
     return
 end
-line_objs = line_objs(line_no);
+if ~isempty(line_no) && isnumeric(line_no) && line_no > 0
+    line_objs = line_objs(line_no);
+end

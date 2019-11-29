@@ -58,9 +58,19 @@ classdef mds < handle
             %% initialize a mds server instance
             mdsobj.connect;
         end
-        function [data, status] = mdsread(mdsobj, shotno, tree_name, tdi_exp)
+        function [data, status] = mdsread(mdsobj, shotno, tree_name, tdi_exp, disp_option)
             %% read data from mds server
             % data = mdsobj.mdsread(shotno, tree_name, tdi_exp)
+            % data = mdsobj.mdsread(shotno, tree_name, tdi_exp, disp_option)
+            % Arg disp_option:
+            %     0: turn off
+            %     1: display all, [default]
+            %     2: overwrite display
+            
+            if nargin < 5
+                disp_option = 1;
+            end
+            assert(sum([0 1 2]==disp_option) > 0, 'disp_option value should be in [0, 1, 2]');
             
             % connect to server
             mdsobj.connect
@@ -86,7 +96,13 @@ classdef mds < handle
                 return
             end
             % read data
-            disp(['mdsread: ' tdi_exp]);
+            switch disp_option
+                case 1
+                    disp(['mdsread: ' tdi_exp]);
+                case 2
+                    tdi_exp_disp = strrep(tdi_exp, '\', ''); % dispstat use fprintf, remove '\' to avoid escape charater
+                    dispstat(['mdsread: ' tdi_exp_disp]);
+            end
             data = mdsvalue(tdi_exp);
             if ~isnumeric(data)
                 warning(['Retrieve value failed for #',...
@@ -104,7 +120,7 @@ classdef mds < handle
         % data_len = mdsobj.mdslen(shotno, tree_name, node_name)
             node_name = mdsobj.revisenodename(node_name);
             tdi_exp = ['size(\', node_name, ')'];
-            [data_len, status] = mdsobj.mdsread(shotno, tree_name, tdi_exp);
+            [data_len, status] = mdsobj.mdsread(shotno, tree_name, tdi_exp, 0);
         end
         function curr_shot = mdscurrentshot(mdsobj, tree_name)
         %% get current shot of total shotlist in MDS server
@@ -135,9 +151,13 @@ classdef mds < handle
                 curr_shot = [];
             end
         end
-        function [dims, status] = mdsdims(mdsobj, shotno, tree_name, node_name)
+        function [dims, status] = mdsdims(mdsobj, shotno, tree_name, node_name, disp_option)
         %% read signal dimension
         % dims = mdsobj.mdsdims(shotno, tree_name, node_name)
+        % dims = mdsobj.mdsdims(shotno, tree_name, node_name, disp_option)
+            if nargin < 5
+                disp_option = 1;
+            end
             dims=[];
             i = 0;
             node_name = mdsobj.revisenodename(node_name);
@@ -146,7 +166,7 @@ classdef mds < handle
                 status = 1;
                 if status == 1
                     warning('off')
-                    [dim_length, status] = mdsobj.mdsread(shotno, tree_name, tdi_exp);
+                    [dim_length, status] = mdsobj.mdsread(shotno, tree_name, tdi_exp, disp_option);
                     warning('on')
                     if isnumeric(dim_length) && ~isempty(dim_length)
                         dims(end+1) = dim_length;
