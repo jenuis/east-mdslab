@@ -941,7 +941,9 @@ classdef prbfit
         end
         
         function fig = fits_profile(fits_res, t, varargin)
-            if length(fits_res) == 1 && length(t) > 1 || length(fits_res) > 1 && length(t) == 1
+            len_f = length(fits_res);
+            len_t = length(t);
+            if len_f == len_t && len_f > 1 || len_f == 1 && len_t > 1 || len_f > 1 && len_t == 1
                 flag_sc = 0;
                 flag_lsd = 0;
                 for i=1:length(varargin)
@@ -970,9 +972,22 @@ classdef prbfit
                 
                 fig = figure(gcf);
                 setfigpostion
+                legend_str = {};
+                y_lims = [];
+                
+                if len_f == len_t && len_f > 1
+                    for i=1:length(fits_res)
+                        figure(fig);
+                        prbfit.fits_profile(fits_res{i}, t(i), varargin{:});
+                        legend_str{end+1} = ['#' num2str(fits_res{i}.shotno) ' ' upper(fits_res{i}.position_tag) '-' upper(strjoin(fits_res{i}.port_name,'&')) num2str(t(i), '@%3.2fs')];
+                        legend_str{end+1} = 'Fit';
+                        hold on
+                        y_lims = [y_lims; ylim];
+                    end
+                    tit_str = ['DivLP ' lower(fits_res{i}.phy_type)];
+                end
+                
                 if length(fits_res) == 1
-                    legend_str = {};
-                    y_lims = [];
                     for i=1:length(t)
                         figure(fig);
                         prbfit.fits_profile(fits_res, t(i), varargin{:});
@@ -981,23 +996,22 @@ classdef prbfit
                         hold on
                         y_lims = [y_lims; ylim];
                     end
-                    title(['#' num2str(fits_res.shotno) ' DivLP ' upper(fits_res.position_tag) '-' upper(strjoin(fits_res.port_name,'&'))])
-                    legend(legend_str);
-                    ylim([min(y_lims(:,1)) max(y_lims(:,2))])
-                    return
+                    tit_str = ['#' num2str(fits_res.shotno) ' DivLP ' upper(fits_res.position_tag) '-' upper(strjoin(fits_res.port_name,'&'))];
                 end
                 
-                legend_str = {};
-                y_lims = [];
-                for i=1:length(fits_res)
-                    figure(fig);
-                    prbfit.fits_profile(fits_res{i}, t, varargin{:});
-                    legend_str{end+1} = ['#' num2str(fits_res{i}.shotno) ' ' upper(fits_res{i}.position_tag) '-' upper(strjoin(fits_res{i}.port_name,'&'))];
-                    legend_str{end+1} = 'Fit';
-                    hold on
-                    y_lims = [y_lims; ylim];
+                if length(t) == 1
+                    for i=1:length(fits_res)
+                        figure(fig);
+                        prbfit.fits_profile(fits_res{i}, t, varargin{:});
+                        legend_str{end+1} = ['#' num2str(fits_res{i}.shotno) ' ' upper(fits_res{i}.position_tag) '-' upper(strjoin(fits_res{i}.port_name,'&'))];
+                        legend_str{end+1} = 'Fit';
+                        hold on
+                        y_lims = [y_lims; ylim];
+                    end
+                    tit_str = num2str(t,'DivLP t=%3.2fs');
                 end
-                title( num2str(t,'DivLP t=%3.2fs') )
+                
+                title(tit_str)
                 legend(legend_str);
                 ylim([min(y_lims(:,1)) max(y_lims(:,2))])
                 return
