@@ -608,6 +608,13 @@ classdef prbfit
                         fit_data_list{j} = prbfit.fitdata_gen(prbd{j}, xaxis{j}, time_slice);
                     end
                     fit_data = prbfit.fitdata_combine(fit_data_list, Args.CombineMethod);
+                    if length(xaxis) == 2 && isequal(xaxis{1}.data, xaxis{2}.data)
+                        s1 = prbd{1}.sigslice(time_slice);
+                        s2 = prbd{2}.sigslice(time_slice);
+                        d1 = mean(s1.data, 2);
+                        d2 = mean(s2.data, 2);
+                        fit_data.merge_r2 = rsquare(d1, d2);
+                    end                
                 else
                     fit_data = prbfit.fitdata_gen(prbd, xaxis, time_slice);
                     fit_data = prbfit.fitdata_avg(fit_data);
@@ -778,6 +785,9 @@ classdef prbfit
             
             res = [];
             if haselement({'peak','lam','S','r0','bg','r2'}, field_name)
+                if ~fieldexist(fits(1).fit_res, field_name)
+                    return
+                end
                 for i=1:length(fits)
                     res(end+1) = fits(i).fit_res.(field_name);
                 end
@@ -787,7 +797,10 @@ classdef prbfit
                 res = [fits.time];
                 return
             end
-            if haselement({'ymin','ymax'}, field_name)
+            if haselement({'ymin','ymax', 'merge_r2'}, field_name)
+                if ~fieldexist(fits(1).fit_data, field_name)
+                    return
+                end
                 for i=1:length(fits)
                     res(end+1) = fits(i).fit_data.(field_name)(1);
                 end

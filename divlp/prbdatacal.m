@@ -56,7 +56,8 @@ classdef prbdatacal < prbbase & signal
             
             inst.phy_type = 'js';
             inst.time = is.time;
-            inst.data = abs(is.data)./1.5./A;%[Acm-2]: ion saturation current density, R_is=1.5 Ohm, Ap=2.5mm^2@2014.
+%             inst.data = abs(is.data)./1.5./A;%[Acm-2]: ion saturation current density, R_is=1.5 Ohm, Ap=2.5mm^2@2014.
+            inst.data = is.data./1.5./A; % backgrounds have already been considered, this could verify if a signal is valid or not
         end
         
         function cal_te(inst)
