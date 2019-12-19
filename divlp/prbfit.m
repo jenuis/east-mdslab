@@ -784,6 +784,9 @@ classdef prbfit
             end
             
             res = [];
+            if length(fits) < 1
+                return
+            end
             if haselement({'peak','lam','S','r0','bg','r2'}, field_name)
                 if ~fieldexist(fits(1).fit_res, field_name)
                     return
@@ -819,13 +822,17 @@ classdef prbfit
         function fig = fits_view(fits_res, varargin)
             %% check arguments
             Args.R2Min = 0.88;
+            Args.INDS = [];
             Args.LineSpec = 'ks-';
             Args.LineWidth = 2;
             Args.MarkerSize = 8;
             Args.FontSize = 20;
             Args.Figure = [];
             Args.ShowYLabel = 1;
-            Args = parseArgs(varargin, Args);
+            Args.PlotMergeR2 = 0;
+            Args = parseArgs(varargin, Args, {'ShowYLabel', 'PlotMergeR2'});
+            
+            fig = [];
             %% recursive call
             if iscell(fits_res) && length(fits_res) > 1
                 %% plot first element
@@ -867,10 +874,14 @@ classdef prbfit
                     val = fits_res{i}.(fnames{ind});
                     if isnumeric(val); val = num2str(val); end
                     if iscell(val); val = strjoin(val,''); end
-                    legend_strs{i} = val;
+                    if ~isempty(fig)
+                        legend_strs{end+1} = val;
+                    end
                     x_lims(:,end+1) = xlim;
                 end
-                samexaxis('join','yal', 'alt2','xlim',[max(x_lims(1,:)) min(x_lims(2,:))]);
+                if length(getsubplots) > 1
+                    samexaxis('join','yal', 'alt2','xlim',[max(x_lims(1,:)) min(x_lims(2,:))]);
+                end
                 axislist = getsubplots(fig);
 %                 for i=1:length(axislist)
 %                     subplot(axislist(i))
@@ -879,18 +890,28 @@ classdef prbfit
 %                         title(['Div-LP ' tit]);
 %                     end
 %                 end
-                subplot(axislist(1));
+                if length(axislist) >= 1
+                    subplot(axislist(1));
+                    title(['Div-LP ' tit]);
+                end
                 legend(legend_strs, 'Orientation', 'horizontal', 'Location', 'best');
-                title(['Div-LP ' tit]);
                 return
             end
             %% extract data
             time = prbfit.fits_extract(fits_res, 'time');
+            if isempty(time)
+                return
+            end
             lam  = prbfit.fits_extract(fits_res, 'lam');
             S    = prbfit.fits_extract(fits_res, 'S');
             r2   = prbfit.fits_extract(fits_res, 'r2');
             ymax = prbfit.fits_extract(fits_res, 'ymax');
+            merge_r2 = prbfit.fits_extract(fits_res, 'merge_r2');
             inds = r2 >= Args.R2Min;
+            if ~isempty(Args.INDS)
+                assert(length(Args.INDS) == length(time), 'argument INDS has different length with fits_res.fits!');
+                inds = Args.INDS;
+            end
             lamint = [];
             for i=1:length(time)
                 if ~inds(i)
@@ -916,17 +937,22 @@ classdef prbfit
                 ['a) \lambda_{' phy_type '} [mm]'],...
                 ['b) S_{' phy_type '} [mm]'],...
                 ['c) \lambda_{' phy_type ',int} [mm]'],...
-                'd) R^2',...
+                'd) R^2_{fit}',...
                 ['e) ' phy_type_latex '_{,peak}']};
+            if Args.PlotMergeR2 && ~isempty(merge_r2)
+                ylist{end+1} = merge_r2(inds);
+                ylabel_list{end+1} = ['f) R^2_{merge}'];
+            end
             if isempty(Args.Figure)
                 fig = figure(gcf);
             else
                 fig = figure(Args.Figure);
                 axislist = getsubplots;
             end
-            for i=1:length(ylist)
+            ylist_len = length(ylist);
+            for i=1:ylist_len
                 if isempty(Args.Figure)
-                    subplot(5,1,i)
+                    subplot(ylist_len,1,i)
                 else
                     subplot(axislist(i))
                 end

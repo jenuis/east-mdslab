@@ -57,7 +57,7 @@ switch hcn_flag*2+pnt_flag
         plot(point.time, point.data)
         plot(netar.time(ind_rng), netar.data(ind_rng), 'ro', 'markersize',10)
         legend('tar','hcn','point')
-        title(ne.meas)
+        title([num2str(shotno) ': "' ne.meas '" selected'])
     case 2
         ne.meas = 'hcn';
     case 1
