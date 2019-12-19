@@ -321,14 +321,14 @@ classdef prbfit
                         c.r0 = coeff(4);
                         c.bg = 0;
                     case 5
-                        c.r0 = coeff(4);
-                        c.bg = coeff(5);
+                        c.r0 = coeff(4); % fitted LCFS
+                        c.bg = coeff(5); % fitted background
                     otherwise
                         error('The length of coeff should be 3, 4 or 5!')
                 end
-                c.peak = coeff(1);
-                c.lam  = coeff(2);
-                c.S    = coeff(3);
+                c.amp = coeff(1); % amplitude on OMP
+                c.lam  = coeff(2); % e-folding length on OMP
+                c.S    = coeff(3); % spreading factor mapped to OMP
                 if nargin == 1
                     ydata = [];
                     return
@@ -338,7 +338,7 @@ classdef prbfit
             else
                 error('Unsupport coeff type!')
             end
-            ydata = c.peak/2*exp((c.S/2/c.lam)^2 - (xdata - c.r0)/c.lam).*erfc(c.S/2/c.lam - (xdata - c.r0)/c.S) + c.bg;
+            ydata = c.amp/2*exp((c.S/2/c.lam)^2 - (xdata - c.r0)/c.lam).*erfc(c.S/2/c.lam - (xdata - c.r0)/c.S) + c.bg;
         end
         
         function fit_res = eichfit(fit_data, varargin)
@@ -787,7 +787,7 @@ classdef prbfit
             if length(fits) < 1
                 return
             end
-            if haselement({'peak','lam','S','r0','bg','r2'}, field_name)
+            if haselement({'amp','lam','S','r0','bg','r2'}, field_name)
                 if ~fieldexist(fits(1).fit_res, field_name)
                     return
                 end
