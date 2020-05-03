@@ -50,6 +50,14 @@ classdef prbdatacal < prbbase & signal
             prbd = inst.prbd_cell{ind};
         end
         
+        function set_attribs(inst, pd_raw)
+            inst.treename = pd_raw.treename;
+            inst.nodename = pd_raw.nodename;
+            for i=1:length(inst.nodename)
+                inst.nodename{i} = strrep(inst.nodename{i}, pd_raw.phy_type, inst.phy_type);
+            end
+        end
+        
         function cal_js(inst)            
             A = inst.prb_extract_headarea();
             is = inst.prbdcell_extract('is');
@@ -58,6 +66,7 @@ classdef prbdatacal < prbbase & signal
             inst.time = is.time;
 %             inst.data = abs(is.data)./1.5./A;%[Acm-2]: ion saturation current density, R_is=1.5 Ohm, Ap=2.5mm^2@2014.
             inst.data = is.data./1.5./A; % backgrounds have already been considered, this could verify if a signal is valid or not
+            inst.set_attribs(is);
         end
         
         function cal_te(inst)
@@ -70,6 +79,7 @@ classdef prbdatacal < prbbase & signal
             inst.phy_type = 'te';
             inst.time = vp.time;
             inst.data = te_val;
+            inst.set_attribs(vp);
         end
         
         function cal_ne(inst)
@@ -81,6 +91,7 @@ classdef prbdatacal < prbbase & signal
             inst.phy_type = 'ne';
             inst.time = is.time;
             inst.data = ne_val;
+            inst.set_attribs(is);
         end
         
         function cal_pe(inst)
@@ -91,6 +102,7 @@ classdef prbdatacal < prbbase & signal
             inst.time = te.time;
 %             inst.data = te.data.*ne.data*1.6e-19*1e19;
             inst.data = te.data.*ne.data*1.6;
+            inst.set_attribs(ne);
         end
         
         function cal_qpar(inst)
@@ -101,6 +113,7 @@ classdef prbdatacal < prbbase & signal
             inst.phy_type = 'qpar';
             inst.time = te.time;
             inst.data = gamma*js.data*1e4.*te.data*1e-6; %[MWm-2];qpar = gamma*Gamma*Te = gamma*js/e*te*e = gamma*js*te
+            inst.set_attribs(js);
         end
     end
     methods
