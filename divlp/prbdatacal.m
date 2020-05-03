@@ -63,8 +63,9 @@ classdef prbdatacal < prbbase & signal
         function cal_te(inst)
             vp = inst.prbdcell_extract('vp');
             vf = inst.prbdcell_extract('vf');
-            te_val = (51*vp.data-vf.data)./log(2);%[eV]: electron temperature.
-            te_val = te_val.*(te_val>=0.1) + 1*(te_val<0.1); % 1* can not be omitted, otherwise, data type will be logical
+            te_val = (51*vp.data - 21*vf.data)./log(2);%[eV]: electron temperature.
+%             te_val = te_val.*(te_val>=0.1) + 1*(te_val<0.1); % 1* can not be omitted, otherwise, data type will be logical
+%             te_val(te_val<0.1) = nan;
             
             inst.phy_type = 'te';
             inst.time = vp.time;
@@ -88,7 +89,8 @@ classdef prbdatacal < prbbase & signal
             
             inst.phy_type = 'pe';
             inst.time = te.time;
-            inst.data = te.data.*ne.data*1.6e-19*1e19;
+%             inst.data = te.data.*ne.data*1.6e-19*1e19;
+            inst.data = te.data.*ne.data*1.6;
         end
         
         function cal_qpar(inst)
@@ -98,7 +100,7 @@ classdef prbdatacal < prbbase & signal
             
             inst.phy_type = 'qpar';
             inst.time = te.time;
-            inst.data = gamma*js.data*1e4.*te.data*1e-6; %[MWm-2];
+            inst.data = gamma*js.data*1e4.*te.data*1e-6; %[MWm-2];qpar = gamma*Gamma*Te = gamma*js/e*te*e = gamma*js*te
         end
     end
     methods

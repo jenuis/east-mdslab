@@ -410,6 +410,11 @@ classdef signal < mds & mdsbase
         function setdisp(sigobj, option)
             sigobj.disp_option = option;
         end
+        function fs = getfs(sigobj)
+            time_diff = diff(sigobj.time);
+            assert(abs(sum(diff(time_diff)))<=time_diff(1)*1e-3, 'time not uniform!');
+            fs = mean(time_diff);
+        end
     end
 end
 

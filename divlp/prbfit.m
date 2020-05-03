@@ -809,6 +809,12 @@ classdef prbfit
                 end
                 return
             end
+            if haselement({'lamintraw', 'laminteich'}, field_name)
+                for i=1:length(fits)
+                    res(i) = prbfit.cal_lambda_int(fits(i).fit_data, fits(i).fit_res, 'type', field_name(7:end));
+                end
+                return
+            end
         end
         
         function [fits_bit, fnames] = fits_bit(fits_res1, fits_res2)

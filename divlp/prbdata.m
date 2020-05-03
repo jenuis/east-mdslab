@@ -88,11 +88,12 @@ classdef prbdata < prbbase
             Args.YAxisType = 'dist2div';
             Args.DownSampling = 10;
             Args.OmitNan = 0;
+            Args.InterpNan = 0;
             Args.ShowXLabel = 1;
             Args.ShowYLabel = 1;
             Args.ShowColorBar = 1;
             Args.FontSize = 20;
-            Args = parseArgs(varargin, Args, {'OmitNan', 'ShowXLabel', 'ShowYLabel'});
+            Args = parseArgs(varargin, Args, {'OmitNan', 'InterpNan', 'ShowXLabel', 'ShowYLabel'});
             yaxis_type = argstrchk({'channel', 'dist2div'}, Args.YAxisType);
             prbd = inst.(phy_type);
             x = prbd.time;
@@ -106,14 +107,20 @@ classdef prbdata < prbbase
                 z = downsamplebymean(z, Args.DownSampling);
             end
             if Args.OmitNan
-                inds_bad = [];
-                for i=1:size(z, 1)
+                inds_bad = false(1, length(y));
+                for i=1:length(y)
                     if sum(isnan(z(i,:)))
-                        inds_bad = i;
+                        inds_bad(i) = true;
                     end
                 end
-                y(inds_bad) = [];
-                z(inds_bad,:) = [];
+                if Args.InterpNan
+                    for i=1:length(x)
+                        z(inds_bad, i) = interp1(y(~inds_bad), z(~inds_bad, i), y(inds_bad), 'PCHIP');
+                    end
+                else
+                    y(inds_bad) = [];
+                    z(inds_bad,:) = [];
+                end
             end
             fig = figure(gcf);
             contourfjet(x, y, z);
