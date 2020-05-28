@@ -1,6 +1,6 @@
 function dispshot(shotlist)
 %% constants
-heat_type = {'lhw', 'icrf', 'nbi', 'ech'};
+heat_type = {'lhw', 'ech', 'nbi', 'icrf'};
 %% check arguments
 if nargin == 0
     m = mds;shotlist = m.mdscurrentshot;

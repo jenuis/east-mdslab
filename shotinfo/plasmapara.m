@@ -1,4 +1,4 @@
-function shot_para = plasmapara(shotno, times)
+function shot_para = plasmapara(shotno, times, varargin)
 %% check ip
 ip = proc_ip(shotno);
 if ~ip.status
@@ -21,6 +21,12 @@ else
 end
 time_range = times([1 end]);
 dt = median(diff(times));
+
+Args.NeType = 'auto';
+Args = parseArgs(varargin, Args);
+
+Args.NeType = lower(Args.NeType);  
+assert(haselement({'auto', 'hcn', 'point'}, Args.NeType), '"NeType" not recognized!')
 %% initialize outputs
 shot_para.shotno = shotno;
 shot_para.flat_time = flat_time;
@@ -59,7 +65,10 @@ sp.readmaxis;
 sp.calbt;
 shot_para.bt = sp.bt;
 %% time dependent
-ne = proc_ne(shotno, time_range);
+if strcmpi(Args.NeType, 'auto')
+    Args.NeType = 'all';
+end
+ne = proc_ne(shotno, time_range, Args.NeType);
 aux_heat = aux_read(shotno);
 
 q95 = proc_q95(shotno, time_range);
