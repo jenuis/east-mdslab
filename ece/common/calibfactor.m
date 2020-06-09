@@ -31,6 +31,7 @@ classdef (Abstract) calibfactor < mdsbase
             tar_ind = findvaluefloor(shot_sep_list, shot_no);
             cbobj.cf = cal_fac{tar_ind, 2};
             cbobj.err = cal_fac{tar_ind, 3};
+            disp(num2str(cal_fac{tar_ind, 1}, 'ECE calib factor was loaded with [%i].'))
         end
         function newobj = slicebychannel(cbobj, channel_list)
         %% slice cabration factor by channel_list
