@@ -25,9 +25,9 @@ else
         res = [];
         return
     end
-    dt = median(atime.time);
+    dt = median(diff(atime.time));
     if length(time_range) == 1 || length(time_range) == 2 && abs(diff(time_range)) < dt
-        time_range_new = time_range(1) + [0 dt];
+        time_range_new = mean(time_range) + [-1 1]*dt/2;
     else
         time_range_new = time_range;
     end
