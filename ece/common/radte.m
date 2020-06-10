@@ -31,7 +31,9 @@ classdef (Abstract) radte < mdsbase
             end
             if length(time_range) == 1 || (max(time_range)-min(time_range)) < 0.1
                 rdobj.load_time_range = [-0.05 0.05] + mean(time_range);
+                return
             end
+            rdobj.load_time_range = [min(time_range) max(time_range)];
         end
         function check_load_args(rdobj, time_range)
             rdobj.parse_load_time_range(time_range);

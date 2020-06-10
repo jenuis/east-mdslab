@@ -26,6 +26,7 @@ classdef profile < radte
         radius
         z
         psinorm
+        channelno
     end
     
     methods(Access = protected)
@@ -71,39 +72,48 @@ classdef profile < radte
             sig.sigreaddata;
             pobj.err = sig.data;
         end
-        function loadbycal(pobj, time_range)
+        function loadbycal(pobj, time_range, radius_range)
         %% calculate profile by raw data
         % pobj.loadbycal
         % pobj.loadbycal(time_range)
         
         % check arguments
-        if nargin == 1
+        if nargin < 2
             time_range = [];
+        end
+        if nargin < 3
+            radius_range = [0 inf];
         end
         pobj.check_load_args(time_range);
         
         % read shot para
         shot_para = shotpara(pobj.shotno);
-%         shot_para.readpulse;
         shot_para.read;
         if isempty(pobj.load_time_range)
             time_median = mean(shot_para.pulseflat);
         else
             time_median = mean(pobj.load_time_range);
         end
-%         shot_para.read(time_median);
+        
         % collect system parameters
         switch pobj.ecetype
             case 'hrs'
                 sys_para = hrssys(pobj.shotno);
+                calib_fac = hrscalib(pobj.shotno);
             case 'mi'
                 sys_para = misys(pobj.shotno);
+                calib_fac = micalib(pobj.shotno);
             otherwise
                 error('Unrecognized ece_type!')
         end
         % set radius and get valid channels
         s2p = spec2prof(shot_para, time_median);
         [pobj.radius, valid_ind] = s2p.map2radius(sys_para.freqlist);
+        radius_inds = pobj.radius <= max(radius_range) & ...
+            pobj.radius >= min(radius_range) & ...
+            ~isnan(calib_fac.cf(valid_ind));
+        pobj.radius = pobj.radius(radius_inds);
+        valid_ind = valid_ind(radius_inds);
         pobj.z = antenna.calz(pobj.radius);
         channel_list = sys_para.channelno(valid_ind);
         % collect raw data and calibration factor
@@ -111,10 +121,8 @@ classdef profile < radte
             case 'hrs'
                 raw_sig = hrsraw(pobj.shotno, 'tr', pobj.load_time_range,...
                     'cl', channel_list);
-                calib_fac = hrscalib(pobj.shotno);
             case 'mi'
                 raw_sig = miraw(pobj.shotno, 'cl', channel_list);
-                calib_fac = micalib(pobj.shotno);
             otherwise
                 error('Unrecognized ece_type!')
         end
@@ -125,6 +133,7 @@ classdef profile < radte
         pobj.time = spec.time;
         pobj.te = spec.te;
         pobj.err = spec.err;
+        pobj.channelno = channel_list;
         end
         function calprof(pobj, spec, shot_para)
         %% calculate profile by spectra and shotpara
@@ -146,6 +155,7 @@ classdef profile < radte
             %if ~isempty(pobj.err)
                 pobj.err = spec.err(valid_ind, :);
             end
+            pobj.channelno = valid_ind;
         end
         function view(pobj, time_slice, varargin)
         %% view profile of sepecific time
@@ -172,6 +182,9 @@ classdef profile < radte
             end
             if ~isempty(pobj.err)
                 pobj.err = pobj.err(sort_ind, :);
+            end
+            if ~isempty(pobj.channelno)
+                pobj.channelno = pobj.channelno(sort_ind);
             end
         end
     end

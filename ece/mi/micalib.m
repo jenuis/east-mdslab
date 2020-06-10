@@ -14,8 +14,8 @@ classdef micalib < calibfactor
     
     methods
         function mcobj = micalib(shotno, calib_dir)
-            if nargin == 1
-                calib_dir = '.';
+            if nargin < 2
+                calib_dir = [];
             end
             mcobj.cffilepath = fullfile(calib_dir, 'micf.mat');
             if nargin > 0
