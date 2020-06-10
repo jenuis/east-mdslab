@@ -15,7 +15,7 @@ classdef hrscalib < calibfactor
     methods
         function hcobj = hrscalib(shotno, calib_dir)
             if nargin == 1
-                calib_dir = [];
+                calib_dir = '.';
             end
             hcobj.cffilepath = fullfile(calib_dir, 'hrscf.mat');
             if nargin > 0
