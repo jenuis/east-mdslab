@@ -110,8 +110,12 @@ classdef profile < radte
         s2p = spec2prof(shot_para, time_median);
         [pobj.radius, valid_ind] = s2p.map2radius(sys_para.freqlist);
         radius_inds = pobj.radius <= max(radius_range) & ...
-            pobj.radius >= min(radius_range) & ...
-            ~isnan(calib_fac.cf(valid_ind));
+            pobj.radius >= min(radius_range);
+        cf_inds = ~isnan(calib_fac.cf(valid_ind));
+        if size(radius_inds, 1) ~= size(cf_inds, 1)
+            cf_inds = cf_inds';
+        end
+        radius_inds = radius_inds & cf_inds;
         pobj.radius = pobj.radius(radius_inds);
         valid_ind = valid_ind(radius_inds);
         pobj.z = antenna.calz(pobj.radius);
