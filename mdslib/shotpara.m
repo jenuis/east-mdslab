@@ -99,9 +99,9 @@ classdef shotpara < mdsbase
                 error('Run readmflux first!');
             end
         end
-        function time_range = mftimerngcheck(spobj, time_range, keep_slice)
+        function time_range = mftimerngcheck(spobj, time_range, allow_single_value)
             if nargin == 2
-                keep_slice = 0;
+                allow_single_value = 0;
             end
             if isempty(spobj.mftime)
                 spobj.readmftime;
@@ -109,7 +109,7 @@ classdef shotpara < mdsbase
             if isempty(time_range)
                 time_range = spobj.mftime([1 end]);
             % ensure psirz has the third dim
-            elseif length(time_range) == 1 && ~keep_slice
+            elseif length(time_range) == 1 && ~allow_single_value
                 time_range = time_range + [0 0.1];
             end
         end
@@ -282,7 +282,7 @@ classdef shotpara < mdsbase
             if nargin == 3
                 time_range = [];
             end
-            time_range = spobj.mftimerngcheck(time_range);
+            time_range = spobj.mftimerngcheck(time_range, 1);
             if size(r,1) ~= 1
                 r = r';
             end
