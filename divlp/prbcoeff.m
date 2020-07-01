@@ -5,6 +5,7 @@ classdef prbcoeff < prbbase
         coeff_shotno;
         coeff_key;
         coeff_val;
+        coeff_shotrng;
     end
     methods(Access=protected)
         function coeff_path = check_coeffpath(inst, coeff_path)
@@ -23,6 +24,11 @@ classdef prbcoeff < prbbase
             if nargin >= 1
                 inst.prb_load_coeff();
             end
+            inst.coeff_path = fullfile(inst.read_config('user_path'), 'coeff');
+        end
+        
+        function coeff_path = prb_get_coeff_path(inst)
+            coeff_path = inst.check_coeffpath();
         end
         
         function prb_set_coeff_path(inst, coeff_path)
@@ -41,18 +47,21 @@ classdef prbcoeff < prbbase
                 return
             end
             %% check coeff path
-            coeff_dirs{1} = pwd;
-            if isempty(inst.coeff_path)
-                inst.coeff_path = fullfile(inst.read_config('user_path'), 'coefficient');
-            end
+%             coeff_dirs{1} = pwd;
+            coeff_dirs = {};
             coeff_dirs{end+1} = inst.check_coeffpath();
             %% locate coeff file
             flag = 0;
             for i=1:length(coeff_dirs)
                 coeff_dir = coeff_dirs{i};
-                [shotlist, filelist] = foldershotlist(coeff_dir, '*.xlsx*', 1:5);
+%                 [shotlist, filelist] = foldershotlist(coeff_dir, '*.xlsx*', 1:5);
+                [shotlist, filelist] = foldershotlist(coeff_dir, '*.xlsx', 1:5);
                 if isempty(shotlist)
-                    continue
+%                     continue
+                    [shotlist, filelist] = foldershotlist(coeff_dir, '*.FULL.mat', 1:5);
+                    if isempty(shotlist)
+                        continue
+                    end
                 end            
                 [shotlist, sort_ind] = sort(shotlist);
                 filelist = filelist(sort_ind);
@@ -62,8 +71,14 @@ classdef prbcoeff < prbbase
                 ind = find((shotlist - shotno) <= 0, 1, 'last');
                 coefffile = filelist{ind};
                 flag = 1;
-                if i == 1
-                    warning('Using coefficient in current dir!')
+%                 if i == 1
+%                     warning('Using coefficient in current dir!')
+%                 end
+                inst.coeff_shotrng = shotlist(ind);
+                if length(shotlist) < ind+1
+                    inst.coeff_shotrng(2) = inf;
+                else
+                    inst.coeff_shotrng(2) = shotlist(ind+1);
                 end
                 break
             end
@@ -110,6 +125,24 @@ classdef prbcoeff < prbbase
             save(coefffile, 'coeff');
         end
         
+        function prb_load_revised_coeff(inst, probe_type)
+            if isempty(inst.coeff_shotrng)
+                error('call "prb_load_coeff" first!')
+            end
+            [shotlist, filelist] = foldershotlist(inst.check_coeffpath(), ['*.' upper([inst.check_postag() probe_type]) '.mat'], 1:5);
+            if ~isempty(shotlist)
+                [shotlist, sort_ind] = sort(shotlist);
+                filelist = filelist(sort_ind);
+                inds = shotlist > min(inst.coeff_shotrng) & shotlist < max(inst.coeff_shotrng) & shotlist <= inst.check_shotno();
+                if sum(inds)
+                    filelist = filelist(inds);
+                    load(filelist{end});
+                    inst.coeff_val(coeff.inds_global) = coeff.val;
+                    disp(['load revised div-prb coefficient: ' filelist{end}])
+                end
+            end
+        end
+        
         function [coeff, label] = prb_extract_coeff(inst, probe_type)
             %% check arguments
             coeff = [];
@@ -119,6 +152,8 @@ classdef prbcoeff < prbbase
             end
             probe_type = inst.check_prbtype(probe_type);
             position_tag = inst.check_postag();
+            %% load revised coeff by position_tag and phy_type
+            inst.prb_load_revised_coeff(probe_type);
             %% locate coeff by position_tag and phy_type
             ind = [];
             channel_list = [];
