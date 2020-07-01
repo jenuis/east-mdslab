@@ -21,10 +21,10 @@ classdef prbcoeff < prbbase
     methods
         function inst = prbcoeff(varargin)
             inst = inst@prbbase(varargin{:});
+            inst.coeff_path = fullfile(inst.read_config('user_path'), 'coeff');
             if nargin >= 1
                 inst.prb_load_coeff();
             end
-            inst.coeff_path = fullfile(inst.read_config('user_path'), 'coeff');
         end
         
         function coeff_path = prb_get_coeff_path(inst)
