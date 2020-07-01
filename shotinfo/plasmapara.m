@@ -12,7 +12,7 @@ default_time = flat_time(1):.05:flat_time(2);
 if nargin == 0
     m = mds;shotno = m.mdscurrentshot;
     times = default_time;
-elseif nargin == 1
+elseif nargin == 1 || isempty(times)
     times = default_time;
 else
     times = sort(times);
@@ -23,7 +23,8 @@ time_range = times([1 end]);
 dt = median(diff(times));
 
 Args.NeType = 'auto';
-Args = parseArgs(varargin, Args);
+Args.DispShot = 0;
+Args = parseArgs(varargin, Args, {'DispShot'});
 
 Args.NeType = lower(Args.NeType);  
 assert(haselement({'auto', 'hcn', 'point'}, Args.NeType), '"NeType" not recognized!')
@@ -71,15 +72,25 @@ end
 ne = proc_ne(shotno, time_range, Args.NeType);
 aux_heat = aux_read(shotno);
 
-q95 = proc_q95(shotno, time_range);
-kappa = proc_kappa(shotno, time_range);
-tritop = proc_tritop(shotno, time_range);
-tribot = proc_tribot(shotno, time_range);
-wmhd = proc_wmhd(shotno, time_range);
-vloop = proc_vp(shotno, time_range);
-prad = proc_prad(shotno, time_range);
-
-efit_info = efit_map(shotno,[],1, time_range, 1);
+if Args.DispShot
+    q95 = [];
+    kappa = [];
+    tritop = [];
+    tribot = [];
+    wmhd = [];
+    vloop = [];
+    prad = [];
+    efit_info = [];
+else
+    q95 = proc_q95(shotno, time_range);
+    kappa = proc_kappa(shotno, time_range);
+    tritop = proc_tritop(shotno, time_range);
+    tribot = proc_tribot(shotno, time_range);
+    wmhd = proc_wmhd(shotno, time_range);
+    vloop = proc_vp(shotno, time_range);
+    prad = proc_prad(shotno, time_range);
+    efit_info = efit_map(shotno,[],1, time_range, 1);
+end
 
 if isempty(efit_info)
     bp.status = 0;
@@ -150,7 +161,7 @@ end
 
 function val = getsigval(sig, t_rng)
 val = nan;
-if ~sig.status
+if ~isstruct(sig) || ~fieldexist(sig, 'status') || ~sig.status
     return
 end
 try

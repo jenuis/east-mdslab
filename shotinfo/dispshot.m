@@ -1,9 +1,12 @@
-function dispshot(shotlist)
+function dispshot(shotlist, save2txt)
 %% constants
 heat_type = {'lhw', 'ech', 'nbi', 'icrf'};
 %% check arguments
 if nargin == 0
     m = mds;shotlist = m.mdscurrentshot;
+end
+if nargin < 2
+    save2txt = 0;
 end
 %% gen disp string
 disp_str = {};
@@ -17,7 +20,7 @@ for i=1:length(shotlist)
     time_range = ip.flat_time;
     
     times = time_range(1):0.1:time_range(end);
-    pp = plasmapara(shotno, times);
+    pp = plasmapara(shotno, times, 'dispshot');
     shot_stat = plasmapara_mean(pp);
     
     tmp_str = {sprintf('%05i ',shotno)};
@@ -41,4 +44,10 @@ clc
 for i=1:length(disp_str)
     disp(disp_str{i})
     disp('------------------------------------------------------------------')
+end
+if save2txt
+    fp = fopen('shot_info.txt', 'w+');
+    content = strjoin(disp_str, '\n----------------------------------------\n');
+    fprintf(fp, content);
+    fclose(fp);
 end
