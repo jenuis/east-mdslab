@@ -35,6 +35,14 @@ classdef prbcoeff < prbbase
             inst.check_coeffpath(coeff_path);
         end
         
+        function coeff_filename = prb_get_coeff_filename(inst)
+            coeff_filename = '';
+            if isempty(inst.coeff_file)
+                return
+            end
+            [~, coeff_filename] = fileparts(inst.coeff_file);
+        end
+        
         function coeff = prb_load_coeff(inst, shotno)
             %% check if coeff has already been loaded
             coeff.shotno = inst.coeff_shotno;
