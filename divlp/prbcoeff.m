@@ -141,7 +141,7 @@ classdef prbcoeff < prbbase
             if ~isempty(shotlist)
                 [shotlist, sort_ind] = sort(shotlist);
                 filelist = filelist(sort_ind);
-                inds = shotlist > min(inst.coeff_shotrng) & shotlist < max(inst.coeff_shotrng) & shotlist <= inst.check_shotno();
+                inds = shotlist >= min(inst.coeff_shotrng) & shotlist < max(inst.coeff_shotrng) & shotlist <= inst.check_shotno();
                 if sum(inds)
                     filelist = filelist(inds);
                     load(filelist{end});
