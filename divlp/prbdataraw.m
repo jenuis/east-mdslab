@@ -14,7 +14,7 @@ classdef prbdataraw < prbcoeff & signal
             else
                 inst.treename = 'east_1';
             end
-            disp(['Will use "' inst.treename '" to load Div-LP data!'])
+            disp(['Div-LP: tree switched to "' inst.treename '"!'])
         end
         
         function prb_read(inst, probe_type, time_range)

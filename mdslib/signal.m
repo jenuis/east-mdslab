@@ -74,16 +74,6 @@ classdef signal < mds & mdsbase
             [dims, status] = mdsdims@mds(mdsobj, sigobj.shotno, sigobj.treename, sigobj.nodename, disp_option);
         end
     end
-    %% static variable
-    methods (Access = protected, Static)
-        function val_out = cache_option(val_in)
-            persistent use_cache;
-            if nargin
-                use_cache = val_in;
-            end
-            val_out = use_cache;
-        end
-    end
     %% signal private methods
     methods(Access = protected)
         %% overide mds private methods
@@ -153,12 +143,11 @@ classdef signal < mds & mdsbase
             %  sigobj = signal(shotno, tree_name, node_name, 'ReadNow', 0
             %                  'TimeRange', [])
             Args = struct('ReadNow', 0, 'TimeRange', [], ...
-                'UseCache', 0, 'CachePath', '');
-            Args = parseArgs(varargin, Args, {'ReadNow','UseCache'});
+                'CachePath', '');
+            Args = parseArgs(varargin, Args, {'ReadNow'});
             % call superclasss construction fun
             sigobj = sigobj@mds;
-            % init mds cache
-            sigobj.cache_option(Args.UseCache);
+            % init mdscache
             sigobj.mdscache  = mdscache(Args.CachePath);
             if nargin > 0
                 % check argin
@@ -257,7 +246,7 @@ classdef signal < mds & mdsbase
             %% single node name
             sigobj.revisenodename;
             if ischar(sigobj.nodename)
-                if sigobj.cache_option
+                if sigobj.cache()
                     sigobj.load_cache(time_range);
                 else
                     sigobj.sigreadtime(time_range);
@@ -269,7 +258,7 @@ classdef signal < mds & mdsbase
             nodename_list = sigobj.nodename;
             % read first node
             sigobj.nodename = nodename_list{1};
-            if sigobj.cache_option
+            if sigobj.cache()
                 first_cache_sig = sigobj.load_cache(time_range);
             else
                 dispoption = sigobj.disp_option;
@@ -287,7 +276,7 @@ classdef signal < mds & mdsbase
             % read remain nodes
             for i = 2:len_nodelist
                 sigobj.nodename = nodename_list{i};
-                if sigobj.cache_option
+                if sigobj.cache()
                     sigobj.load_cache(time_range, first_cache_sig.time); % avoid reading time again
                 else
                     sigobj.sigreaddata;
@@ -395,17 +384,8 @@ classdef signal < mds & mdsbase
             y = sigobj.data;
             varplot(x, y, varargin)
         end
-        function cache(sigobj, option)
-            if nargin == 1
-                option = double(~sigobj.cache_option);
-            end
-            if ~isempty(option) && (isnumeric(option) && option || ischar(option) && strcmpi(option, 'on'))
-                sigobj.cache_option(1);
-                disp('cache is turned on')
-            else
-                sigobj.cache_option(0);
-                disp('cache is turned off')
-            end
+        function res = cache(sigobj, varargin)
+            res = sigobj.mdscache.global_cache(varargin{:});
         end
         function setdisp(sigobj, option)
             sigobj.disp_option = option;

@@ -90,5 +90,25 @@ classdef mdscache < handle
             end
             inst.clean_warning = show_warning;
         end
+        function res = global_cache(inst, option)
+            global global_caching
+            if nargin == 2
+                if ischar(option) 
+                    if strcmpi(option, 'on')
+                        option = true;
+                    else
+                        option = false;
+                    end
+                end
+                global_caching = boolean(option);
+                if global_caching
+                    disp('mdscache: global caching is turned on!')
+                end
+            end
+            if isempty(global_caching)
+                global_caching = false;
+            end
+            res = global_caching;
+        end
     end
 end
