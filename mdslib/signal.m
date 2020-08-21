@@ -290,7 +290,9 @@ classdef signal < mds & mdsbase
             % store properties
             sigobj.data = data_array;
             sigobj.nodename = nodename_list_new;
-            sigobj.disp_option = dispoption;
+            if ~sigobj.cache()
+                sigobj.disp_option = dispoption;
+            end
             dispstat('','clean');
         end
         function sigreadbunch(sigobj, node_format_str, channel_list, time_range)
