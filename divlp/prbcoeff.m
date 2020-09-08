@@ -137,7 +137,7 @@ classdef prbcoeff < prbbase
             if isempty(inst.coeff_shotrng)
                 error('call "prb_load_coeff" first!')
             end
-            [shotlist, filelist] = foldershotlist(inst.check_coeffpath(), ['*.' upper([inst.check_postag() probe_type]) '.mat'], 1:5);
+            [shotlist, filelist] = foldershotlist(inst.check_coeffpath(), ['*.' upper([inst.check_postag() probe_type]) '*.mat'], 1:5);
             if ~isempty(shotlist)
                 [shotlist, sort_ind] = sort(shotlist);
                 filelist = filelist(sort_ind);
