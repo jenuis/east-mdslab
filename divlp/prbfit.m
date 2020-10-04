@@ -444,8 +444,12 @@ classdef prbfit
             end
             xlabel(x_label)
             ylabel(y_label)
-            xlim([min(fit_data.xdata)*0.9 max(fit_data.xdata)*1.1]);
-            ylim([min(fit_data.ydata -fit_data.yerr)*0.95 max(fit_data.ydata+fit_data.yerr)*1.05]);
+            x_lim = [min(fit_data.xdata) max(fit_data.xdata)];
+            x_lim = x_lim + [-1 1]*diff(x_lim)*.05;
+            xlim(x_lim);
+            y_lim = [min(fit_data.ydata -fit_data.yerr) max(fit_data.ydata+fit_data.yerr)];
+            y_lim = y_lim + [-1 1]*diff(y_lim)*.05;
+            ylim(y_lim);
             if nargin == 1
                 return
             end
