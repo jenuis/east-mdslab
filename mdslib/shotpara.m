@@ -65,6 +65,13 @@ classdef shotpara < mdsbase
         RBdryMax = 'rbdrymax';
         DefaultRmajor =  1.85;
         DefaultRminor = 0.45;
+        ItInfo = {...
+            'east', 'focs_it';...
+            'east', 'focs4';...
+            'east', 'tfp';...
+            'eng_tree', 'it';...
+            'pcs_east', 'sysdrit';...
+            };
     end
     methods(Access = protected)
     %% private methods
@@ -155,37 +162,27 @@ classdef shotpara < mdsbase
             spobj.pulseflat = ip.time(flat_range);
         end
         function readit(spobj)
-        %% read Bt0
+        %% read It
         % spobj.readit
             if ~isempty(spobj.it)
                 return
             end
             sig_it = signal(spobj.shotno);
-            % read technical diagnosic
-            sig_it.treename = 'east';
-            if spobj.shotno > 65321
-                sig_it.nodename = 'focs4';
-            else
-                sig_it.nodename = 'focs_it';
-            end
-            try
-                sig_it.sigreaddata;
-                spobj.extract_it(sig_it);
-            catch
-                % read eng_tree it
+            for i=1:length(spobj.ItInfo)
+                tree_name = spobj.ItInfo{i, 1};
+                node_name = spobj.ItInfo{i, 2};
+                sig_it.treename = tree_name;
+                sig_it.nodename = node_name;
                 try
-                    sig_it.treename = 'eng_tree';
-                    sig_it.nodename = 'it';
-                    sig_it.sigreaddata;
-                    spobj.extract_it(sig_it, 1);
-                catch
-                    % read pcs_east sysdrit
-                    sig_it.treename = 'pcs_east';
-                    sig_it.nodename = 'sysdrit';
                     sig_it.sigreaddata;
                     spobj.extract_it(sig_it);
+                    if ~isempty(spobj.it)
+                        break
+                    end
+                catch
+%                     warning(['Failed read It from: "' tree_name '"->"' node_name '"']);
                 end
-            end            
+            end           
         end
         function readmftime(spobj)
         %% read efit time
