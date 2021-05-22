@@ -10,6 +10,7 @@ classdef prbbase < mdsbase
         port_name
         distrib_info
         head_area
+        daq_info
     end
     methods(Access=protected, Static)        
         function probe_type = check_prbtype(probe_type)
@@ -161,6 +162,9 @@ classdef prbbase < mdsbase
             if isempty(inst.head_area)
                 inst.head_area = divprb_head_area(shotno);
             end
+            if isempty(inst.daq_info)
+                inst.daq_info = divprb_daq_info(shotno);
+            end
             rmpath(sys_path);
         end
                
@@ -185,6 +189,28 @@ classdef prbbase < mdsbase
                     res = res_port{3}(2:3,:);
                 otherwise
                     error('invalid data_type to extract distrb_info!')
+            end
+        end
+        
+        function res = prb_extract_daqinfo(inst, info_type, prb_type)
+            switch lower(info_type)
+                case 'sign'
+                    field_names = {...
+                        inst.check_postag(),...
+                        inst.check_portname(),...
+                        inst.check_prbtype(prb_type)};
+
+                    res = inst.daq_info.sign;
+                    for i=1:length(field_names)
+                        fname = field_names{i};
+                        if ~fieldexist(res, fname)
+                            res = 1;
+                            break;
+                        end
+                        res = res.(fname);
+                    end
+                otherwise
+                    error('Unrecognized info_type!')
             end
         end
         

@@ -839,10 +839,20 @@ classdef prbfit
             Args.FontSize = 20;
             Args.Figure = [];
             Args.ShowYLabel = 1;
-            Args.PlotMergeR2 = 0;
-            Args = parseArgs(varargin, Args, {'ShowYLabel', 'PlotMergeR2'});
+            Args.PlotMergeR2 = 1;
+            Args.PlotFitAmp = 1;
+            Args.PlotFitR0 = 1;
+            Args.PlotFitBg = 1;
+            Args.PlotSimple = 0;
+            Args = parseArgs(varargin, Args, {'ShowYLabel', 'PlotMergeR2', 'PlotFitAmp', 'PlotFitR0', 'PlotFitBg', 'PlotSimple'});
             
             fig = [];
+            
+            if Args.PlotSimple
+                Args.PlotFitAmp = 0;
+                Args.PlotFitR0 = 0;
+                Args.PlotFitBg = 0;
+            end
             %% recursive call
             if iscell(fits_res) && length(fits_res) > 1
                 %% plot first element
@@ -917,6 +927,9 @@ classdef prbfit
             r2   = prbfit.fits_extract(fits_res, 'r2');
             ymax = prbfit.fits_extract(fits_res, 'ymax');
             merge_r2 = prbfit.fits_extract(fits_res, 'merge_r2');
+            amp  = prbfit.fits_extract(fits_res, 'amp');
+            r0   = prbfit.fits_extract(fits_res, 'r0');
+            bg   = prbfit.fits_extract(fits_res, 'bg');
             inds = r2 >= Args.R2Min;
             if ~isempty(Args.INDS)
                 assert(length(Args.INDS) == length(time), 'argument INDS has different length with fits_res.fits!');
@@ -949,9 +962,27 @@ classdef prbfit
                 ['c) \lambda_{' phy_type ',int} [mm]'],...
                 'd) R^2_{fit}',...
                 ['e) ' phy_type_latex '_{,peak}']};
+            fig_indices = {'f)', 'g)', 'h)', 'i)'};
+            fig_indices_pnt = 0;
             if Args.PlotMergeR2 && ~isempty(merge_r2)
                 ylist{end+1} = merge_r2(inds);
-                ylabel_list{end+1} = ['f) R^2_{merge}'];
+                fig_indices_pnt = fig_indices_pnt +1;
+                ylabel_list{end+1} = [fig_indices{fig_indices_pnt} ' R^2_{merge}'];
+            end
+            if Args.PlotFitAmp && ~isempty(amp)
+                ylist{end+1} = amp(inds);
+                fig_indices_pnt = fig_indices_pnt +1;
+                ylabel_list{end+1} = [fig_indices{fig_indices_pnt} ' ' phy_type_latex '_{,fit,amp}'];
+            end
+            if Args.PlotFitR0 && ~isempty(r0)
+                ylist{end+1} = r0(inds);
+                fig_indices_pnt = fig_indices_pnt +1;
+                ylabel_list{end+1} = [fig_indices{fig_indices_pnt} ' ' phy_type_latex '_{,fit,r0}'];
+            end
+            if Args.PlotFitBg && ~isempty(bg)
+                ylist{end+1} = bg(inds);
+                fig_indices_pnt = fig_indices_pnt +1;
+                ylabel_list{end+1} = [fig_indices{fig_indices_pnt} ' ' phy_type_latex '_{,fit,bg}'];
             end
             if isempty(Args.Figure)
                 fig = figure(gcf);

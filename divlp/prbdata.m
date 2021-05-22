@@ -93,6 +93,7 @@ classdef prbdata < prbbase
             Args.ShowYLabel = 1;
             Args.ShowColorBar = 1;
             Args.FontSize = 20;
+            Args.TimeRange = [];
             Args = parseArgs(varargin, Args, {'OmitNan', 'InterpNan', 'ShowXLabel', 'ShowYLabel'});
             yaxis_type = argstrchk({'channel', 'dist2div'}, Args.YAxisType);
             prbd = inst.(phy_type);
@@ -121,6 +122,12 @@ classdef prbdata < prbbase
                     y(inds_bad) = [];
                     z(inds_bad,:) = [];
                 end
+            end
+            if ~isempty(Args.TimeRange)
+                time_range = mergeintervals(x([1 end]), Args.TimeRange);
+                time_rng_inds = findvalue(x, time_range);
+                x = x(time_rng_inds(1):time_rng_inds(2));
+                z = z(:, time_rng_inds(1):time_rng_inds(2));
             end
             fig = figure(gcf);
             contourfjet(x, y, z);

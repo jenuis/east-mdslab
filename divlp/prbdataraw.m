@@ -40,6 +40,12 @@ classdef prbdataraw < prbcoeff & signal
             for i=1:length(noise)
                 inst.data(i,:) = (inst.data(i,:)-noise(i))*coeff(i);
             end
+            %% read daqsign and correct data
+            sign = inst.prb_extract_daqinfo('sign', inst.phy_type);
+            if sign ~= 1
+                inst.data = inst.data*sign;
+                warning(['DivLP (' upper(inst.check_postag) '@' upper(inst.check_portname()) ', ' inst.phy_type ') DAQ Sign Changed to: ' num2str(sign)]);
+            end
         end
     end
 end
