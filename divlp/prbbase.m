@@ -1,4 +1,7 @@
-classdef prbbase < mdsbase
+classdef prbbase < mdsbase    
+%% prbbase
+% Xiang Liu@ASIPP 2019-08-30
+% jent.le@hotmail.com
     properties(Access=protected, Constant)
         POS_TAG  = {'UI', 'UO', 'LI', 'LO'};
         PRB_TYPE = {'i_s', 'v_p', 'v_f'};

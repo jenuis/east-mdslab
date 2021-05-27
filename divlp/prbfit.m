@@ -1,4 +1,7 @@
 classdef prbfit
+%% prbfit
+% Xiang Liu@ASIPP 2019-08-30
+% jent.le@hotmail.com
     methods(Static)
         function efit_info = gen_efitinfo(prbd, efit_tree)
             %% check arguments

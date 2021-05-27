@@ -1,4 +1,7 @@
 classdef prbdatacal < prbbase & signal
+%%
+% Xiang Liu@ASIPP 2019-08-30
+% jent.le@hotmail.com
     properties
         phy_type
     end

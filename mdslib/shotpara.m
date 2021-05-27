@@ -32,6 +32,7 @@ classdef shotpara < mdsbase
     % jent.le@hotmail.com
     properties
     %% public properties
+        EfitTree = 'efit_east';
         pulseflat
         it
         bt
@@ -49,7 +50,6 @@ classdef shotpara < mdsbase
     end
     properties(Constant, Access = protected)
     %% protected constant properties
-        EfitTree = 'efit_east';
         ItRange = [10500 3500]; % center and error
         PcsTree = 'pcs_east';
         IpNode = 'pcrl01';

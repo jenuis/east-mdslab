@@ -1,4 +1,7 @@
 classdef prbcoeff < prbbase
+%% prbcoeff
+% Xiang Liu@ASIPP 2019-08-30
+% jent.le@hotmail.com
     properties(Access=protected)
         coeff_path;
         coeff_file;
