@@ -6,6 +6,7 @@ classdef mds < handle
     %       data_len = mdsobj.mdslen(shotno, tree_name, node_name)
     %       curr_shot = mdsobj.mdscurrentshot
     %       dims = mdsobj.mdsdims(shotno, tree_name, node_name)
+    %       datetime = mdsdatetime(shotno)
     
     % Xiang Liu@ASIPP 2018-8-4
     % jent.le@hotmail.com
@@ -103,8 +104,8 @@ classdef mds < handle
                     tdi_exp_disp = strrep(tdi_exp, '\', ''); % dispstat use fprintf, remove '\' to avoid escape charater
                     dispstat(['mdsread: ' tdi_exp_disp]);
             end
-            data = mdsvalue(tdi_exp);
-            if ~isnumeric(data)
+            [data, status] = mdsvalue(tdi_exp);
+            if mod(status, 2) == 0
                 warning(['Retrieve value failed for #',...
                     num2str(shotno), ' under tree "',...
                     tree_name, '" with TDI expression: "',...
@@ -181,6 +182,10 @@ classdef mds < handle
             if ~(i == 0 && status == 0)
                 status = 1;
             end
+        end
+        function date_time = mdsdatetime(mdsobj, shotno)
+            dt_str = mdsobj.mdsread(shotno, 'east', '\ipm:createtime');
+            date_time = datetime(datevec(dt_str, 'yyyy/mm/dd HH:MM:SS'));
         end
     end
 end
