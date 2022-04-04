@@ -1,7 +1,12 @@
-classdef prbfit
-%% prbfit
+%% Fitting class of lambda for divlp
+% -------------------------------------------------------------------------
+% Copyright 2019 Xiang Liu
+% Contact: Xiang Liu, xliu.fusion@outlook.com
+% This file is part of EAST-MDSLAB. You should have recieved a copy of the
+% MIT license. If not, see <https://mit-license.org>
+% -------------------------------------------------------------------------
 % Xiang Liu@ASIPP 2019-08-30
-% jent.le@hotmail.com
+classdef prbfit
     methods(Static)
         function efit_info = gen_efitinfo(prbd, efit_tree)
             %% check arguments

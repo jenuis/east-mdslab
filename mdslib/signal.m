@@ -1,38 +1,43 @@
+%% Class to read signal for mdslib
+% -------------------------------------------------------------------------
+% Copyright 2019 Xiang Liu
+% Contact: Xiang Liu, xliu.fusion@outlook.com
+% This file is part of EAST-MDSLAB. You should have recieved a copy of the
+% MIT license. If not, see <https://mit-license.org>
+% -------------------------------------------------------------------------
+% Xiang Liu@ASIPP 2017-9-12
+%SIGNAL class which bundles time and data properties of a mds signal
+%Derived from mds and mdsbase
+%   Instance:
+%       sigobj = signal
+%       sigobj = signal(shotno)
+%       sigobj = signal(shotno, tree_name)
+%       sigobj = signal(shotno, tree_name, node_name)
+%       sigobj = signal(shotno, tree_name, node_name, 'ReadNow', 0,...
+%                       'TimeRange', [])
+%   Props:
+%       shotno
+%       treename
+%       nodename: can be a string and a cell string of same time dimension
+%                 under same tree.
+%       time
+%       data
+%   Methods (inherited from mds):
+%       data = sigobj.mdsread(tdi_exp, disp_option)
+%       data_len = sigobj.mdslen
+%       dims = sigobj.mdsdims(disp_option)
+%       curr_shot = mdsobj.mdscurrentshot
+%   Methods:
+%       sigobj.sigreadtime(time_range)
+%       sigobj.sigreaddata(index_range)
+%       sigobj.sigread(time_range)
+%       sigobj.sigreadbunch(node_format_str, channel_list, time_range)
+%       sliced_sigobj = sigobj.sigslice(time_range)
+%       part_data = sigobj.sigpartdata(time_range)
+%       unbund_data = sigobj.sigunbund(node_name)
+%       sigobj.sigplot
+    
 classdef signal < mds & mdsbase
-    %SIGNAL class which bundles time and data properties of a mds signal
-    %Derived from mds and mdsbase
-    %   Instance:
-    %       sigobj = signal
-    %       sigobj = signal(shotno)
-    %       sigobj = signal(shotno, tree_name)
-    %       sigobj = signal(shotno, tree_name, node_name)
-    %       sigobj = signal(shotno, tree_name, node_name, 'ReadNow', 0,...
-    %                       'TimeRange', [])
-    %   Props:
-    %       shotno
-    %       treename
-    %       nodename: can be a string and a cell string of same time dimension
-    %                 under same tree.
-    %       time
-    %       data
-    %   Methods (inherited from mds):
-    %       data = sigobj.mdsread(tdi_exp, disp_option)
-    %       data_len = sigobj.mdslen
-    %       dims = sigobj.mdsdims(disp_option)
-    %       curr_shot = mdsobj.mdscurrentshot
-    %   Methods:
-    %       sigobj.sigreadtime(time_range)
-    %       sigobj.sigreaddata(index_range)
-    %       sigobj.sigread(time_range)
-    %       sigobj.sigreadbunch(node_format_str, channel_list, time_range)
-    %       sliced_sigobj = sigobj.sigslice(time_range)
-    %       part_data = sigobj.sigpartdata(time_range)
-    %       unbund_data = sigobj.sigunbund(node_name)
-    %       sigobj.sigplot
-    
-    % Xiang Liu@ASIPP 2017-9-12
-    % jent.le@hotmail.com
-    
     %% signal private properties
     properties(Access = protected)
         timesliceindex

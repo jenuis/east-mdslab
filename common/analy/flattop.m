@@ -1,8 +1,12 @@
 %% Find steady range of input data
+% -------------------------------------------------------------------------
+% Copyright 2019 Xiang Liu
+% Contact: Xiang Liu, xliu.fusion@outlook.com
+% This file is part of EAST-MDSLAB. You should have recieved a copy of the
+% MIT license. If not, see <https://mit-license.org>
+% -------------------------------------------------------------------------
 % Author: Xiang Liu@ASIPP
 % Last Modified: 2014-08-07
-% E-mail: jent.le@hotmail.com
-% Version : 1.0
 function flat_ind_rng = flattop(signal_data, thres_init, thres_increas_step, stop_criteria)
 %% By populating the number of data that larger than a certain threshold to 
 % extract information of the flat-top region of the input signal.

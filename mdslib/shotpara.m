@@ -1,35 +1,38 @@
+%% Class to read shot parameters for mdslib 
+% -------------------------------------------------------------------------
+% Copyright 2019 Xiang Liu
+% Contact: Xiang Liu, xliu.fusion@outlook.com
+% This file is part of EAST-MDSLAB. You should have recieved a copy of the
+% MIT license. If not, see <https://mit-license.org>
+% -------------------------------------------------------------------------
+% Xiang Liu@ASIPP 2017-9-12
+%   Instance:
+%       spobj = shotpara
+%       spobj = shotpara(shotno)
+%   Props:
+%       shotno
+%       pulseflat
+%       it
+%       bt
+%       mftime
+%       maxisloc
+%       mfpsirz
+%       mfgridrz
+%       mfssi
+%       mfpsinorm
+%       rbdry
+%   Methods:
+%       spobj.read(time_range)
+%       spobj.readpulse
+%       spobj.readit
+%       spobj.readmftime
+%       spobj.readmaxis(time_range)
+%       spobj.readmflux(time_range)
+%       spobj.readrbdry(time_range)
+%       spobj.calnormpsi(r, z, time_range)
+%       spobj.calbt
+%       spobj.viewmflux(time_slice)
 classdef shotpara < mdsbase
-    %SHOTPARA collects plasma parameter for one shot
-    %Derived from mdsbase
-    %   Instance:
-    %       spobj = shotpara
-    %       spobj = shotpara(shotno)
-    %   Props:
-    %       shotno
-    %       pulseflat
-    %       it
-    %       bt
-    %       mftime
-    %       maxisloc
-    %       mfpsirz
-    %       mfgridrz
-    %       mfssi
-    %       mfpsinorm
-    %       rbdry
-    %   Methods:
-    %       spobj.read(time_range)
-    %       spobj.readpulse
-    %       spobj.readit
-    %       spobj.readmftime
-    %       spobj.readmaxis(time_range)
-    %       spobj.readmflux(time_range)
-    %       spobj.readrbdry(time_range)
-    %       spobj.calnormpsi(r, z, time_range)
-    %       spobj.calbt
-    %       spobj.viewmflux(time_slice)
-    
-    % Xiang Liu@ASIPP 2017-9-12
-    % jent.le@hotmail.com
     properties
     %% public properties
         EfitTree = 'efit_east';

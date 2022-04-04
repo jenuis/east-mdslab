@@ -1,3 +1,10 @@
+%% Method for geting segment of auxilary heating struct
+% -------------------------------------------------------------------------
+% Copyright 2019 Xiang Liu
+% Contact: Xiang Liu, xliu.fusion@outlook.com
+% This file is part of EAST-MDSLAB. You should have recieved a copy of the
+% MIT license. If not, see <https://mit-license.org>
+% -------------------------------------------------------------------------
 function seg = aux_segment(aux, time_range, dt, merge_same_pow)
 %% get time_range
 if nargin == 1

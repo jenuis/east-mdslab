@@ -1,22 +1,26 @@
-classdef spec2prof < mdsbase
-    %SPEC2PROF hold functions for mapping freqency to major radius
-    %Derived from mdsbase
-    %   Instance:
-    %       spobj = spec2prof
-    %   Props:
-    %       it
-    %       rmax
-    %       rmin
-    %       timeslice
-    %   Methods:
-    %       spobj.setpara(shot_para, time_slice)
-    %       radius = spobj.freq2radius(freq, n)
-    %       [radius_new, valid_ind] = spobj.validradius(radius)
-    %       [radius, valid_ind] = spobj.map2radius(freq)
- 
-    % Xiang Liu@ASIPP 2017-9-14
-    % jent.le@hotmail.com
-    
+%% Spectra to profile converting class for ece
+% -------------------------------------------------------------------------
+% Copyright 2019 Xiang Liu
+% Contact: Xiang Liu, xliu.fusion@outlook.com
+% This file is part of EAST-MDSLAB. You should have recieved a copy of the
+% MIT license. If not, see <https://mit-license.org>
+% -------------------------------------------------------------------------
+% Xiang Liu@ASIPP 2017-9-14
+% SPEC2PROF hold functions for mapping freqency to major radius
+% Derived from mdsbase
+%   Instance:
+%       spobj = spec2prof
+%   Props:
+%       it
+%       rmax
+%       rmin
+%       timeslice
+%   Methods:
+%       spobj.setpara(shot_para, time_slice)
+%       radius = spobj.freq2radius(freq, n)
+%       [radius_new, valid_ind] = spobj.validradius(radius)
+%       [radius, valid_ind] = spobj.map2radius(freq)
+classdef spec2prof < mdsbase    
     properties
         it
         rmax

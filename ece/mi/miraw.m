@@ -1,23 +1,25 @@
+%% Class to read raw data for mi of ece
+% -------------------------------------------------------------------------
+% Copyright 2019 Xiang Liu
+% Contact: Xiang Liu, xliu.fusion@outlook.com
+% This file is part of EAST-MDSLAB. You should have recieved a copy of the
+% MIT license. If not, see <https://mit-license.org>
+% -------------------------------------------------------------------------
+% Xiang Liu@ASIPP 2017-9-15
+% MIRAW reads MI reference and interferogram and do fft get raw data
+% Derived from signal
+%   Instance:
+%       mrobj = miraw
+%       mrobj = miraw(shotno, 'TimeRange', time_range,...
+%                     'ChannelList', channel_list)
+%   Props:
+%       refer
+%       interfer
+%       channellist
+%   Methods:
+%       mrobj.mireadmds('TimeRange', time_range,...
+%                       'ChannelList', channel_list)    
 classdef miraw < signal
-    %MIRAW reads MI reference and interferogram and do fft get raw data
-    %Derived from signal
-    %   Instance:
-    %       mrobj = miraw
-    %       mrobj = miraw(shotno, 'TimeRange', time_range,...
-    %                     'ChannelList', channel_list)
-    %   Props:
-    %       refer
-    %       interfer
-    %       channellist
-    %   Methods:
-    %       mrobj.mireadmds('TimeRange', time_range,...
-    %                       'ChannelList', channel_list)
-    %       
-    %       
-    
-    % Xiang Liu@ASIPP 2017-9-15
-    % jent.le@hotmail.com
-    
     properties
         refer
         interfer

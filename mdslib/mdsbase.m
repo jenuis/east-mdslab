@@ -1,11 +1,11 @@
-classdef (Abstract) mdsbase < handle
-    %MDSBASE is an abstract class for holding common methods 
-    %Derived from handle
-    %   Props:
-    %       shotno
-    %   Methods:
-    %       new = copy(inst)
-    
+%% Base class for mdslib
+% -------------------------------------------------------------------------
+% Copyright 2019 Xiang Liu
+% Contact: Xiang Liu, xliu.fusion@outlook.com
+% This file is part of EAST-MDSLAB. You should have recieved a copy of the
+% MIT license. If not, see <https://mit-license.org>
+% -------------------------------------------------------------------------
+classdef (Abstract) mdsbase < handle   
     properties
         shotno
     end

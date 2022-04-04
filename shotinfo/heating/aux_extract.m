@@ -1,3 +1,10 @@
+%% Method for extracing auxilary heating struct
+% -------------------------------------------------------------------------
+% Copyright 2019 Xiang Liu
+% Contact: Xiang Liu, xliu.fusion@outlook.com
+% This file is part of EAST-MDSLAB. You should have recieved a copy of the
+% MIT license. If not, see <https://mit-license.org>
+% -------------------------------------------------------------------------
 function heat_pow = aux_extract(aux_heat, time_range)
 %% old routine for 2014 after
 % heat_pow = aux_extract_2014(aux_heat, time_range);

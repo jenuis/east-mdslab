@@ -1,17 +1,21 @@
-classdef (Abstract) calibfactor < mdsbase
-    %CALIBFACTOR load calibration factor of ece system
-    %Derived from mdsbase
-    %   Props:
-    %       shotno
-    %       cf
-    %       err
-    %   Methods:
-    %      cbobj.load 
-    %      newobj = cbobj.slicebychannel(channel_list) 
-          
-    % XiangLiu@ASIPP 2017-9-14
-    % jent.le@hotmail.com
-    
+%% Class holding calibration factor for ece
+% -------------------------------------------------------------------------
+% Copyright 2019 Xiang Liu
+% Contact: Xiang Liu, xliu.fusion@outlook.com
+% This file is part of EAST-MDSLAB. You should have recieved a copy of the
+% MIT license. If not, see <https://mit-license.org>
+% -------------------------------------------------------------------------
+% XiangLiu@ASIPP 2017-9-14
+% CALIBFACTOR load calibration factor of ece system
+% Derived from mdsbase
+%   Props:
+%       shotno
+%       cf
+%       err
+%   Methods:
+%      cbobj.load 
+%      newobj = cbobj.slicebychannel(channel_list) 
+classdef (Abstract) calibfactor < mdsbase    
     properties
         cf % calibration factor
         err % clibration error

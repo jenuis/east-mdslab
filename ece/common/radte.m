@@ -1,7 +1,13 @@
+%% Class radation temperature for ece
+% -------------------------------------------------------------------------
+% Copyright 2019 Xiang Liu
+% Contact: Xiang Liu, xliu.fusion@outlook.com
+% This file is part of EAST-MDSLAB. You should have recieved a copy of the
+% MIT license. If not, see <https://mit-license.org>
+% -------------------------------------------------------------------------
+% RADTE is a abstract class for ECE radiation Te
+% Derived from mdsbase
 classdef (Abstract) radte < mdsbase
-    %RADTE is a abstract class for ECE radiation Te
-    %Derived from mdsbase
-    
     properties
         ecetype
         time

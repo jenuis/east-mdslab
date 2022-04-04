@@ -1,7 +1,14 @@
-function indices = findvalue(array, values_to_find, ind_no_to_find)
+%% Find indices of the values in array. 
+% if values_to_find is a 1-D array and ind_no_to_find >1, 
+% then indices is a 2-D array.
+% -------------------------------------------------------------------------
+% Copyright 2019 Xiang Liu
+% Contact: Xiang Liu, xliu.fusion@outlook.com
+% This file is part of EAST-MDSLAB. You should have recieved a copy of the
+% MIT license. If not, see <https://mit-license.org>
+% -------------------------------------------------------------------------
 % Last modified by Xiang Liu @ 2017-4-10
-% Find indices of the values in array. if values_to_find is a 1-D array
-% and ind_no_to_find >1, then indices is a 2-D array.
+function indices = findvalue(array, values_to_find, ind_no_to_find)
 %% check arguments
 if nargin == 2
     ind_no_to_find = 1;

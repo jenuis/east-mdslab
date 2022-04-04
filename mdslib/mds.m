@@ -1,16 +1,18 @@
-classdef mds < handle
-    %% MDS class for connecting and reading data from a MDS server
-    % Derived from handle
-    %   Methods:
-    %       data = mdsobj.mdsread(shotno, tree_name, tdi_exp)
-    %       data_len = mdsobj.mdslen(shotno, tree_name, node_name)
-    %       curr_shot = mdsobj.mdscurrentshot
-    %       dims = mdsobj.mdsdims(shotno, tree_name, node_name)
-    %       datetime = mdsdatetime(shotno)
-    
-    % Xiang Liu@ASIPP 2018-8-4
-    % jent.le@hotmail.com
-    
+%% API class to communicate with MDSPlus server for mdslib
+% -------------------------------------------------------------------------
+% Copyright 2019 Xiang Liu
+% Contact: Xiang Liu, xliu.fusion@outlook.com
+% This file is part of EAST-MDSLAB. You should have recieved a copy of the
+% MIT license. If not, see <https://mit-license.org>
+% -------------------------------------------------------------------------
+% Xiang Liu@ASIPP 2018-8-4
+%   Methods:
+%       data = mdsobj.mdsread(shotno, tree_name, tdi_exp)
+%       data_len = mdsobj.mdslen(shotno, tree_name, node_name)
+%       curr_shot = mdsobj.mdscurrentshot
+%       dims = mdsobj.mdsdims(shotno, tree_name, node_name)
+%       datetime = mdsdatetime(shotno)
+classdef mds < handle   
     properties(Constant, Access = protected)
     %% constant properties
         IpAddr = 'mds.ipp.ac.cn';

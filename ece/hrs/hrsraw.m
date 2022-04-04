@@ -1,24 +1,28 @@
-classdef hrsraw < signal
-    %HRSRAW is a class to read hrs raw data derived from signal class
-    %Derived from signal
-    %   Instance:
-    %       hrobj = hrsraw
-    %       hrobj = hrsraw(shotno)
-    %       hrobj = hrsraw(shotno, 'ReadHigh', 0,...
-    %                      'ChannelList', [],...
-    %                      'TimeRange', []))
-    %   Props:
-    %       channellist
-    %   Methods
-    %       hrobj.hrsreadmds('ReadHigh', 0,...
-    %                        'ChannelList', [],...
-    %                        'TimeRange', [])
-    %       hrobj.hrsreadlocal
-    %       sig_ch = hrobj.hrsgetchannel(channel_no)
-    
-    % Xiang Liu@ASIPP 2017-9-13
-    % jent.le@hotmail.com
-    
+%% Raw signal reading class for hrs of ece
+% -------------------------------------------------------------------------
+% Copyright 2019 Xiang Liu
+% Contact: Xiang Liu, xliu.fusion@outlook.com
+% This file is part of EAST-MDSLAB. You should have recieved a copy of the
+% MIT license. If not, see <https://mit-license.org>
+% -------------------------------------------------------------------------
+% Xiang Liu@ASIPP 2017-9-13
+% HRSRAW is a class to read hrs raw data derived from signal class
+% Derived from signal
+%   Instance:
+%       hrobj = hrsraw
+%       hrobj = hrsraw(shotno)
+%       hrobj = hrsraw(shotno, 'ReadHigh', 0,...
+%                      'ChannelList', [],...
+%                      'TimeRange', []))
+%   Props:
+%       channellist
+%   Methods
+%       hrobj.hrsreadmds('ReadHigh', 0,...
+%                        'ChannelList', [],...
+%                        'TimeRange', [])
+%       hrobj.hrsreadlocal
+%       sig_ch = hrobj.hrsgetchannel(channel_no)
+classdef hrsraw < signal    
     properties(Constant, Access = protected)
         ChannelFormatStr = 'hrs%02ih';
         BgTimeRange = [-0.2 0];

@@ -1,3 +1,10 @@
+%% Method for calculating mean values of auxilary heating struct
+% -------------------------------------------------------------------------
+% Copyright 2019 Xiang Liu
+% Contact: Xiang Liu, xliu.fusion@outlook.com
+% This file is part of EAST-MDSLAB. You should have recieved a copy of the
+% MIT license. If not, see <https://mit-license.org>
+% -------------------------------------------------------------------------
 function pow_info = aux_stat(aux_heat, time_range)
 %% old for 2014 and after
 % pow_info = aux_stat_2014(aux_heat, time_range);

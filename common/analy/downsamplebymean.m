@@ -1,7 +1,14 @@
-function array_out = downsamplebymean(array_in, avg_len, avg_method)
+%% Method for downsampling data by averaging
+% -------------------------------------------------------------------------
+% Copyright 2019 Xiang Liu
+% Contact: Xiang Liu, xliu.fusion@outlook.com
+% This file is part of EAST-MDSLAB. You should have recieved a copy of the
+% MIT license. If not, see <https://mit-license.org>
+% -------------------------------------------------------------------------
 %% average data along row by step of avg_len
 % Xiang Liu@ ASIPP
 % Modified@2017-3-16
+function array_out = downsamplebymean(array_in, avg_len, avg_method)
 if avg_len == 1
     array_out = array_in;
     return

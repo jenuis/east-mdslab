@@ -1,3 +1,10 @@
+%% Calculate the mean value of a plasmapara struct
+% -------------------------------------------------------------------------
+% Copyright 2019 Xiang Liu
+% Contact: Xiang Liu, xliu.fusion@outlook.com
+% This file is part of EAST-MDSLAB. You should have recieved a copy of the
+% MIT license. If not, see <https://mit-license.org>
+% -------------------------------------------------------------------------
 function shot_para = plasmapara_mean(shot_para, time_range)
 %% heat type
 LeastPow = 100/1000; %[MW]

@@ -1,27 +1,31 @@
+%% Subclass of radte implemented to get profile distribution for ece
+% -------------------------------------------------------------------------
+% Copyright 2019 Xiang Liu
+% Contact: Xiang Liu, xliu.fusion@outlook.com
+% This file is part of EAST-MDSLAB. You should have recieved a copy of the
+% MIT license. If not, see <https://mit-license.org>
+% -------------------------------------------------------------------------
+% Xiang Liu@ASIPP 2017-9-16
+% PROFILE class holds properties and methods of ECE profile
+% Derived from radte
+%   Instance:
+%       pobj = profile
+%       pobj = profile(shotno, ece_type)
+%   Props:
+%       shotno
+%       ecetype
+%       radius
+%       z
+%       psinorm
+%       time
+%       te
+%       err
+%   Methods:
+%       pobj.loadbymds(time_range)
+%       pobj.loadbycal(time_range)
+%       pobj.calprof(spec, shot_para)
+%       pobj.view(time_slice, varargin) check varplot for more details
 classdef profile < radte
-    %PROFILE class holds properties and methods of ECE profile
-    %Derived from radte
-    %   Instance:
-    %       pobj = profile
-    %       pobj = profile(shotno, ece_type)
-    %   Props:
-    %       shotno
-    %       ecetype
-    %       radius
-    %       z
-    %       psinorm
-    %       time
-    %       te
-    %       err
-    %   Methods:
-    %       pobj.loadbymds(time_range)
-    %       pobj.loadbycal(time_range)
-    %       pobj.calprof(spec, shot_para)
-    %       pobj.view(time_slice, varargin) check varplot for more details
-    
-    % Xiang Liu@ASIPP 2017-9-16
-    % jent.le@hotmail.com
-    
     properties
         radius
         z

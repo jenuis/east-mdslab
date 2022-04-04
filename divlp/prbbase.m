@@ -1,7 +1,12 @@
-classdef prbbase < mdsbase    
-%% prbbase
+%% Base Class for divlp
+% -------------------------------------------------------------------------
+% Copyright 2019 Xiang Liu
+% Contact: Xiang Liu, xliu.fusion@outlook.com
+% This file is part of EAST-MDSLAB. You should have recieved a copy of the
+% MIT license. If not, see <https://mit-license.org>
+% -------------------------------------------------------------------------
 % Xiang Liu@ASIPP 2019-08-30
-% jent.le@hotmail.com
+classdef prbbase < mdsbase    
     properties(Access=protected, Constant)
         POS_TAG  = {'UI', 'UO', 'LI', 'LO'};
         PRB_TYPE = {'i_s', 'v_p', 'v_f'};

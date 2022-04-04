@@ -1,5 +1,11 @@
+%% Class to cache mdsplus data for mdslib
+% -------------------------------------------------------------------------
+% Copyright 2019 Xiang Liu
+% Contact: Xiang Liu, xliu.fusion@outlook.com
+% This file is part of EAST-MDSLAB. You should have recieved a copy of the
+% MIT license. If not, see <https://mit-license.org>
+% -------------------------------------------------------------------------
 classdef mdscache < handle
-    %% mds cache class, cache data locally
     properties(Access=protected)
         cache_path
         clean_warning = 1;

@@ -1,5 +1,11 @@
-%% Xiang Liu@19.3.15
-% call plasmapara and plot
+%% Plot plasmapara struct
+% -------------------------------------------------------------------------
+% Copyright 2019 Xiang Liu
+% Contact: Xiang Liu, xliu.fusion@outlook.com
+% This file is part of EAST-MDSLAB. You should have recieved a copy of the
+% MIT license. If not, see <https://mit-license.org>
+% -------------------------------------------------------------------------
+% Xiang Liu@ASIPP 2019.3.15
 function plasmapara_plot(shotno, col_no, dt)
 %% CONSTANTS and Controls
 if nargin == 1

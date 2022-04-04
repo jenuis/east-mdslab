@@ -1,25 +1,29 @@
+%% Subclass of radte implemeted to get spectra for ece
+% -------------------------------------------------------------------------
+% Copyright 2019 Xiang Liu
+% Contact: Xiang Liu, xliu.fusion@outlook.com
+% This file is part of EAST-MDSLAB. You should have recieved a copy of the
+% MIT license. If not, see <https://mit-license.org>
+% -------------------------------------------------------------------------
+% Xiang Liu@ASIPP 2017-9-16
+% SPECTRA class holds properties and methods of ECE spectra
+% Derived from radte
+%   Instance:
+%       sobj = spectra
+%       sobj = spectra(shotno, ece_type)
+%   Props:
+%       shotno
+%       ecetype
+%       freq
+%       time
+%       te
+%       err
+%    Instance:
+%       sobj.loadbymds(time_range)
+%       sobj.loadbycal(time_range)
+%       sobj.calspec(raw_sig, calib_factor)
+%       sobj.view(time_slice, varargin) check varplot for more details
 classdef spectra < radte
-    %SPECTRA class holds properties and methods of ECE spectra
-    %Derived from radte
-    %   Instance:
-    %       sobj = spectra
-    %       sobj = spectra(shotno, ece_type)
-    %   Props:
-    %       shotno
-    %       ecetype
-    %       freq
-    %       time
-    %       te
-    %       err
-    %    Instance:
-    %       sobj.loadbymds(time_range)
-    %       sobj.loadbycal(time_range)
-    %       sobj.calspec(raw_sig, calib_factor)
-    %       sobj.view(time_slice, varargin) check varplot for more details
-    
-    % Xiang Liu@ASIPP 2017-9-16
-    % jent.le@hotmail.com
-    
     properties
         freq
     end
