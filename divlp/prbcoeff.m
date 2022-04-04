@@ -65,11 +65,10 @@ classdef prbcoeff < prbbase
             flag = 0;
             for i=1:length(coeff_dirs)
                 coeff_dir = coeff_dirs{i};
-%                 [shotlist, filelist] = foldershotlist(coeff_dir, '*.xlsx*', 1:5);
-                [shotlist, filelist] = foldershotlist(coeff_dir, '*.xlsx', 1:5);
+                [shotlist, filelist] = foldershotlist(coeff_dir, '*.xlsx');
                 if isempty(shotlist)
 %                     continue
-                    [shotlist, filelist] = foldershotlist(coeff_dir, '*.FULL.mat', 1:5);
+                    [shotlist, filelist] = foldershotlist(coeff_dir, '*.FULL.mat');
                     if isempty(shotlist)
                         continue
                     end
@@ -140,7 +139,7 @@ classdef prbcoeff < prbbase
             if isempty(inst.coeff_shotrng)
                 error('call "prb_load_coeff" first!')
             end
-            [shotlist, filelist] = foldershotlist(inst.check_coeffpath(), ['*.' upper([inst.check_postag() probe_type]) '*.mat'], 1:5);
+            [shotlist, filelist] = foldershotlist(inst.check_coeffpath(), ['*.' upper([inst.check_postag() probe_type]) '*.mat']);
             if ~isempty(shotlist)
                 [shotlist, sort_ind] = sort(shotlist);
                 filelist = filelist(sort_ind);

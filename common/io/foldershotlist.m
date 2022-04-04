@@ -1,6 +1,6 @@
 function [shotlist, filelist] = foldershotlist(Dirs, FilterStr, shotno_ind)
 if nargin == 2
-    shotno_ind = 5:9;
+    shotno_ind = [];
 end
 if ischar(Dirs)
     [shotlist, filelist] = listone(Dirs, FilterStr, shotno_ind);
@@ -41,7 +41,17 @@ for i=1:length(dir_list)
     d = dir_list(i).name;
     filelist{end+1} = d;
     [~, file_name] = fileparts(d);
-    shotlist(i) = str2double(file_name(shotno_ind));
+    if ~isempty(shotno_ind)
+        shotlist(i) = str2double(file_name(shotno_ind));
+    else
+        s = regexp(file_name, '\d{4,7}', 'match');
+        if isempty(s)
+            warning(['Skipped! RegExp matched no shotno for file: ' file_name FilterStr(2:end)])
+            shotlist(i) = NaN;
+            continue
+        end
+        shotlist(i) = str2double(s{1});
+    end
 end
 bad_ind = isnan(shotlist);
 shotlist(bad_ind) = [];

@@ -2,7 +2,7 @@ function hhh=vline(x,in1,in2)
 % function h=vline(x, linetype, label)
 % 
 % Draws a vertical line on the current axes at the location specified by 'x'.  Optional arguments are
-% 'linetype' (default is 'r:') and 'label', which applies a text label to the graph near the line.  The
+% 'linetype' (default is 'r--') and 'label', which applies a text label to the graph near the line.  The
 % label appears in the same color as the line.
 %
 % The line is held on the current axes, and after plotting the line, the function returns the axes to
@@ -32,7 +32,7 @@ if length(x)>1  % vector input
     for I=1:length(x)
         switch nargin
         case 1
-            linetype='r:';
+            linetype='r--';
             label='';
         case 2
             if ~iscell(in1)
@@ -67,7 +67,7 @@ if length(x)>1  % vector input
 else
     switch nargin
     case 1
-        linetype='r:';
+        linetype='r--';
         label='';
     case 2
         linetype=in1;

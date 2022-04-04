@@ -106,6 +106,9 @@ classdef prbdata < prbbase
             ind = findvalue(x, 0);
             x = x(ind:end);
             z = z(:,ind:end);
+            if strcmpi(Args.YAxisType, 'dist2div')
+                y = y/10;
+            end
             if Args.DownSampling > 1
                 x = downsamplebymean(x, Args.DownSampling);
                 z = downsamplebymean(z, Args.DownSampling);
@@ -138,7 +141,11 @@ classdef prbdata < prbbase
                 xlabel('Time [s]')
             end
             if Args.ShowYLabel
-                ylabel(yaxis_type)
+                y_label = yaxis_type;
+                if strcmpi(Args.YAxisType, 'dist2div')
+                    y_label = 'Dist2Corner [cm]';
+                end
+                ylabel(y_label)
             end
             if Args.ShowColorBar
                 colorbar;

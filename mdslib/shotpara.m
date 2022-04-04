@@ -125,6 +125,26 @@ classdef shotpara < mdsbase
             [~, spobj.efit_status] = m.mdsread(spobj.shotno, spobj.EfitTree, ['\' spobj.EfitTimeNode '[0]']);
         end
     end
+    methods(Static)
+        function bp = calbp(ip, a, kappa)
+            %% change unit to SI
+            if min(ip) < 20
+                ip = ip*1e6;
+                warning('Ip unit is asserted to be [MA]')
+            elseif min(ip) < 20*1e3
+                ip = ip*1e3;
+                warning('Ip unit is asserted to be [kA]')
+            end
+            %% cal
+            mu0 = 4*pi*1e-7;
+
+            % bp = mu0*ip./(pi*a.*sqrt(2*(1+kappa.^2))); % goldston 2012 NF misses minor
+            % radius, correct in Eich PRL
+
+            L  = 2*pi*a.*sqrt((1+kappa.^2)/2);
+            bp = mu0*ip./L;
+        end
+    end
     methods
         function spobj = shotpara(shotno)
         %% create an instance of shotpara
@@ -330,6 +350,9 @@ classdef shotpara < mdsbase
             time_ind = findtime(spobj.mfpsinorm.time, time_slice);
             time_slice = spobj.mfpsinorm.time(time_ind);
             contour(x, y, z')
+            hold on
+            [ind1, ind2]=find(z==min(min(z)));
+            plot(x(ind1),y(ind2),'k+');
 %             set(gca, 'DataAspectRatio', [1 1 1])
             axis equal
             caxis([0 1.05])

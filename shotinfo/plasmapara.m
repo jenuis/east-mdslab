@@ -1,4 +1,4 @@
-function shot_para = plasmapara(shotno, times, varargin)
+function [shot_para, sp] = plasmapara(shotno, times, varargin)
 %% check ip
 ip = proc_ip(shotno);
 if ~ip.status
@@ -21,7 +21,14 @@ else
 end
 time_range = times([1 end]);
 dt = median(diff(times));
+use_plasma_mean = 0;
+if isnan(dt) || dt == 0
+    dt = 1e-1;
+    time_range = [-1 1]*dt/2+time_range(1);
+    use_plasma_mean = 1;
+end
 
+Args.EfitTree = 'efit_east';
 Args.NeType = 'auto';
 Args.DispShot = 0;
 Args = parseArgs(varargin, Args, {'DispShot'});
@@ -51,6 +58,7 @@ shot_para.delta = [];
 shot_para.wmhd = [];
 shot_para.R = [];
 shot_para.a = [];
+shot_para.rlcfs = [];
 
 shot_para.vloop = [];
 shot_para.prad = [];
@@ -89,13 +97,14 @@ else
     wmhd = proc_wmhd(shotno, time_range);
     vloop = proc_vp(shotno, time_range);
     prad = proc_prad(shotno, time_range);
-    efit_info = efit_map(shotno,[],1, time_range, 1);
+    efit_info = efit_map(shotno,[],1, time_range, 1, Args.EfitTree);
 end
 
 if isempty(efit_info)
     bp.status = 0;
     R.status = 0;
     a.status = 0;
+    rlcfs.status = 0;
 else
     bp.time = efit_info.time;
     bp.data = efit_info.lcfs_mid_bp;
@@ -108,6 +117,10 @@ else
     a.time = efit_info.time;
     a.data = efit_info.a;
     a.status = 1;
+    
+    rlcfs.time = efit_info.time;
+    rlcfs.data = efit_info.lcfs_mid_r;
+    rlcfs.status = 1;
 end
 
 for i=1:length(times)
@@ -153,10 +166,14 @@ for i=1:length(times)
     shot_para.bp(end+1) = getsigval(bp, t_rng);
     shot_para.R(end+1) = getsigval(R, t_rng);
     shot_para.a(end+1) = getsigval(a, t_rng);
+    shot_para.rlcfs(end+1) = getsigval(rlcfs, t_rng);
     shot_para.vloop(end+1) = getsigval(vloop, t_rng);
     shot_para.prad(end+1) = getsigval(prad, t_rng);
 end
-
+%% mean
+if use_plasma_mean && length(shot_para.R) > 1
+    shot_para = plasmapara_mean(shot_para);
+end
 
 
 function val = getsigval(sig, t_rng)
