@@ -125,7 +125,7 @@ classdef prbbase < mdsbase
             end
             conf = ini2struct(ini_file);
             if ~fieldexist(conf, key)
-                error('"user_path" is not specified in "divlp.ini"!')
+                error(['"' key '" is not specified in "divlp.ini"!'])
             end
             val = conf.(key);
         end
