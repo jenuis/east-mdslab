@@ -1029,6 +1029,7 @@ classdef prbfit
         end
         
         function fig = fits_profile(fits_res, t, varargin)
+            %% recursive call
             len_f = length(fits_res);
             len_t = length(t);
             if len_f == len_t && len_f > 1 || len_f == 1 && len_t > 1 || len_f > 1 && len_t == 1
@@ -1104,12 +1105,37 @@ classdef prbfit
                 ylim([min(y_lims(:,1)) max(y_lims(:,2))])
                 return
             end
+            %% single call
+            Args.ShowChannelNo = 0;
+            Args.SameColor = 0;
+            Args.LineSpecData = 'k*';
+            Args.LineSpecFit = 'r';
+            Args.LineSpecSep = 'k:';
+            Args.TextColor = 'r';
+            Args.MarkerSize = 8;
+            Args.LineWidth = 2;
+            Args.FontSize = 20;
+            Args = parseArgs(varargin, Args, {'ShowChannelNo', 'SameColor'});
+            show_channel_no = Args.ShowChannelNo;
+            Args = rmfield(Args, 'ShowChannelNo');
+            varargin = struct2vararg(Args);
+            
             time = prbfit.fits_extract(fits_res, 'time');
             tind = findvalue(time, t);
             fit_data = fits_res.fits(tind).fit_data;
             fit_res  = fits_res.fits(tind).fit_res;
             fig = prbfit.fitdata_plot(fit_data, fit_res, varargin{:});
             title(['#' num2str(fits_res.shotno) '@' num2str(t,'%3.2f') 's ' upper(fits_res.position_tag) '-' upper(strjoin(fits_res.port_name,'&'))])
+            
+            if show_channel_no && strcmpi(fit_data.xtype, 'dist2div')
+                pb = prbbase(fits_res.shotno, fits_res.position_tag, fits_res.port_name{1});
+                pb.prb_load_sys;
+                ch = pb.prb_extract_distinfo('channel');
+                if min(ch)>length(ch); ch = ch - length(ch); end
+                x = pb.prb_extract_distinfo(fit_data.xtype); x = abs(x);
+                y = prbfit.fun_eich(fit_res,x);
+                for i=1:length(ch); text(x(i),y(i)-diff(ylim)*0.06,num2str(ch(i)),'color','r','fontsize',10); end
+            end
         end
         
         function fig = fits_profile_all(fits_res, time_range, subfigno)

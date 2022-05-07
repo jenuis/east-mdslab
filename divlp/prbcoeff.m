@@ -100,7 +100,7 @@ classdef prbcoeff < prbbase
                 break
             end
             if ~flag
-                warning('could not find the coefficient file!')
+                warning(['could not find the coefficient file for shotno = ' num2str(shotno) '!'])
                 return
             end
             %% load coeff
@@ -142,7 +142,7 @@ classdef prbcoeff < prbbase
             save(coefffile, 'coeff');
         end
         
-        function prb_load_revised_coeff(inst, probe_type)
+        function revised_coeff_path = prb_load_revised_coeff(inst, probe_type)
             if isempty(inst.coeff_shotrng)
                 error('call "prb_load_coeff" first!')
             end
@@ -153,9 +153,10 @@ classdef prbcoeff < prbbase
                 inds = shotlist >= min(inst.coeff_shotrng) & shotlist < max(inst.coeff_shotrng) & shotlist <= inst.check_shotno();
                 if sum(inds)
                     filelist = filelist(inds);
-                    load(filelist{end});
+                    revised_coeff_path = filelist{end};
+                    load(revised_coeff_path);
                     inst.coeff_val(coeff.inds_global) = coeff.val;
-                    disp(['load revised div-prb coefficient: ' filelist{end}])
+                    disp(['load revised div-prb coefficient: ' revised_coeff_path])
                 end
             end
         end
