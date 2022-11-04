@@ -5,7 +5,7 @@
 % This file is part of EAST-MDSLAB. You should have recieved a copy of the
 % MIT license. If not, see <https://mit-license.org>
 % -------------------------------------------------------------------------
-function [shot_para, sp] = plasmapara(shotno, times, varargin)
+function [shot_para, sp, fhs] = plasmapara(shotno, times, varargin)
 %% check ip
 ip = proc_ip(shotno);
 if ~ip.status
@@ -38,7 +38,8 @@ end
 Args.EfitTree = 'efit_east';
 Args.NeType = 'auto';
 Args.DispShot = 0;
-Args = parseArgs(varargin, Args, {'DispShot'});
+Args.ForceTimeDependent = 0;
+Args = parseArgs(varargin, Args, {'DispShot', 'ForceTimeDependent'});
 
 Args.NeType = lower(Args.NeType);  
 assert(haselement({'auto', 'hcn', 'point'}, Args.NeType), '"NeType" not recognized!')
@@ -63,6 +64,7 @@ shot_para.tritop = [];
 shot_para.tribot = [];
 shot_para.delta = [];
 shot_para.wmhd = [];
+shot_para.energy = [];
 shot_para.R = [];
 shot_para.a = [];
 shot_para.rlcfs = [];
@@ -80,11 +82,17 @@ sp.it.mean = shot_para.it;
 sp.readmaxis;
 sp.calbt;
 shot_para.bt = sp.bt;
+
+time_len = length(times);
+if Args.ForceTimeDependent && time_len > 1
+    shot_para.it = shot_para.it * ones(1,time_len);
+    shot_para.bt = shot_para.bt * ones(1,time_len);
+end
 %% time dependent
 if strcmpi(Args.NeType, 'auto')
     Args.NeType = 'all';
 end
-ne = proc_ne(shotno, time_range, Args.NeType);
+[ne, fhs.ne] = proc_ne(shotno, time_range, Args.NeType);
 aux_heat = aux_read(shotno);
 
 if Args.DispShot
@@ -93,6 +101,7 @@ if Args.DispShot
     tritop = [];
     tribot = [];
     wmhd = [];
+    energy = [];
     vloop = [];
     prad = [];
     efit_info = [];
@@ -102,6 +111,7 @@ else
     tritop = proc_tritop(shotno, time_range);
     tribot = proc_tribot(shotno, time_range);
     wmhd = proc_wmhd(shotno, time_range);
+    energy = proc_energy(shotno, time_range);
     vloop = proc_vp(shotno, time_range);
     prad = proc_prad(shotno, time_range);
     efit_info = efit_map(shotno,[],1, time_range, 1, Args.EfitTree);
@@ -130,7 +140,7 @@ else
     rlcfs.status = 1;
 end
 
-for i=1:length(times)
+for i=1:time_len
     t_rng = [-.5 .5]*dt + times(i);
     %% ip
     shot_para.ip(end+1) = getsigval(ip, t_rng);
@@ -170,6 +180,7 @@ for i=1:length(times)
     shot_para.tribot(end+1) = getsigval(tribot, t_rng);
     shot_para.delta(end+1) = (shot_para.tritop(end) + shot_para.tribot(end))/2;
     shot_para.wmhd(end+1) = getsigval(wmhd, t_rng);
+    shot_para.energy(end+1) = getsigval(energy, t_rng);
     shot_para.bp(end+1) = getsigval(bp, t_rng);
     shot_para.R(end+1) = getsigval(R, t_rng);
     shot_para.a(end+1) = getsigval(a, t_rng);

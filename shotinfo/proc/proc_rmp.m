@@ -24,6 +24,10 @@ sig.nodename = {...
     'irmpl7', ...
     'irmpl8'};
 sig.sigread(time_range);
+if isempty(sig.time)
+    return
+end
+
 sig.sigslice([0 sig.time(end)], 1);
 rmp.signal = sig;
 

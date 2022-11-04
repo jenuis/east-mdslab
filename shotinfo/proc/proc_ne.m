@@ -1,4 +1,4 @@
-function ne = proc_ne(shotno, time_range, ne_type)
+function [ne, fh] = proc_ne(shotno, time_range, ne_type)
 if nargin == 2
     ne_type = 'all';
 elseif nargin == 1
@@ -6,6 +6,7 @@ elseif nargin == 1
     ne_type = 'all';
 end
 ne.status = 0;
+fh = [];
 if haselement({'all','hcn'}, ne_type)
     hcn = signal_read(shotno, 'pcs_east', 'dfsdev', time_range);
     if hcn.status
@@ -50,7 +51,7 @@ switch hcn_flag*2+pnt_flag
         else
             error('can not get target density!')
         end
-        figure
+        fh = figure;
         plot(netar.time, netar.data)
         hold on
         plot(hcn.time, hcn.data)

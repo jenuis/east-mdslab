@@ -134,6 +134,8 @@ classdef prbfit
             prbd_time_inds = findtime(prbd.time, time_slice, 1);
             fit_data.ydata = prbd.data(:, prbd_time_inds(1):prbd_time_inds(end));
             fit_data.ytype = prbd.phy_type;
+            fit_data.chtot = size(prbd.data, 1);
+            fit_data.chtot_valid = fit_data.chtot - sum(isnan(prbd.data(:,1)));
             ydata_size = size(fit_data.ydata);
             %% extract xdata
             if prbfit.match_rrsep(prbd, xaxis) %% R-Rsep
@@ -167,6 +169,7 @@ classdef prbfit
             end
         end
         
+        % to do find a method to cal fit_data.chtot and fit_data.chtot_avg
         function fit_data = fitdata_combine(fit_data_list, method)
             %% check arguments
             if ~iscell(fit_data_list) && length(fit_data_list) < 2
@@ -233,7 +236,7 @@ classdef prbfit
             ydata = [];
             yerr = [];
             if avg_samex
-                xdata = sort(fit_data.xdata); %% sorted automatically
+                xdata = sort(unique(fit_data.xdata)); %% sorted automatically
                 for i=1:length(xdata)
                     inds = fit_data.xdata==xdata(i);
                     y = fit_data.ydata(inds);
@@ -613,7 +616,7 @@ classdef prbfit
             dispstat('','init');
             for i=1:length(time_slices)
                 time_slice = time_slices{i};
-                if cmb
+                if cmb % use fitdata_combine by default
                     prbd_len = length(prbd);
                     fit_data_list = cell(1, prbd_len);
                     for j=1:length(prbd)
@@ -627,7 +630,7 @@ classdef prbfit
                         d2 = mean(s2.data, 2);
                         fit_data.merge_r2 = rsquare(d1, d2);
                     end                
-                else
+                else % use fitdata_avg with samex by default
                     fit_data = prbfit.fitdata_gen(prbd, xaxis, time_slice);
                     fit_data = prbfit.fitdata_avg(fit_data);
                 end
@@ -746,7 +749,7 @@ classdef prbfit
             end
             %% cmb==0
             if cmb == 0
-                fits_res = prbfit.fits(pda.(phy_type), rrsep, fit_cfg{:});
+                fits_res = prbfit.fits(pda.(phy_type), rrsep, fit_cfg{:}); 
                 pda_out = pda;
                 rrsep_out = rrsep;
                 return
@@ -1147,6 +1150,9 @@ classdef prbfit
                 time_range = time([1 end]);
                 subfigno = 20;
             end
+            if isempty(time_range)
+                time_range = time([1 end]);
+            end
             time_inds = findtime(time, time_range);
             time = time(time_inds(1):time_inds(2));
             time_len = length(time);
@@ -1171,20 +1177,26 @@ classdef prbfit
                 ax = subplot(row_no, col_no, i);
                 set(ax, 'position', [l, b, w*0.98, h*0.98]);
                 t = time(inds(i));
-                prbfit.fits_profile(fits_res, t);
+                prbfit.fits_profile(fits_res, t, 'LineSpecSep', 'r:');
                 axes = get(gca,'children');
-                str_lam = axes(1).String{3};
-                str_r2 = axes(1).String{4};
+                str_lam = strrep(axes(1).String{1}(1:end-4), '=',':');
+                str_s   = strrep(axes(1).String{2}(1:end-4), '=',':');
+                str_r2  = strrep(axes(1).String{4}, '=',':');
                 delete(axes(1));
                 xlabel([]);
                 ylabel([]);
                 title([]);
                 xticks([]);
                 yticks([]);
-                str = {num2str(t, 't=%.2fs')};
-                str{end+1} = strrep(str_lam, ' ','');
+                str = {num2str(t, 't:%.2f')};
+                str{end+1} = strrep(str_lam, ' ', '');
+                str{end+1} = strrep(str_s, ' ', '');
                 str{end+1} = strrep(str_r2, ' ','');
                 text(0,0.5,str,'fontsize',15,'color','r','unit','normalized');
+                if i==1
+                    textbp(num2str(fits_res.shotno,'#%i'),'fontsize',18,'color','c');
+                end
+                vline(0, 'k');
             end
         end
     end

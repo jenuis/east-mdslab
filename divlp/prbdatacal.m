@@ -93,7 +93,7 @@ classdef prbdatacal < prbbase & signal
         function cal_ne(inst)
             A  = inst.prb_extract_headarea();
             is = inst.prbdcell_extract('is');
-            te = inst.prbdcell_extract('te');
+            te = inst.prbdcell_extract('te'); te.data=abs(te.data);
             ne_val = (abs(is.data)*73.3./sqrt(te.data))/sqrt(2)*8.22/A*1e-1;%[10^19m-3]:electron density, According to Guo and JET probe thesis
             
             inst.phy_type = 'ne';

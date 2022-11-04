@@ -12,6 +12,14 @@ else
                 fig_size = [0 0 1 1];
             case 'middle'
                 fig_size = [0.25 0 .5 1];
+            case 'upleft'
+                fig_size = [.0 .5 .5 .5];
+            case 'upright'
+                fig_size = [.5 .5 .5 .5];
+            case 'downleft'
+                fig_size = [.0 .0 .5 .5];
+            case 'downright'
+                fig_size = [.5 .0 .5 .5];
             otherwise
                 error('Unknow fig postion!')
         end

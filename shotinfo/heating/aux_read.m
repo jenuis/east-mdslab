@@ -22,6 +22,9 @@ if shotno <= 44326 % 2012 campaign
 else % campaign starts from 2014
     aux_heat =  aux_read_2014(shotno, heat_type, exception);
 end
+if shotno>1e6
+    warning('Aux might be out of data!')
+end
 aux_heat.shotno = shotno;
 
 
