@@ -427,6 +427,7 @@ classdef prbfit
         function fig = fitdata_plot(fit_data, fit_res, varargin)
             %% check arguments
             Args.SameColor = 0;
+            Args.ShowR0 = 0;
             Args.LineSpecData = 'k*';
             Args.LineSpecFit = 'r';
             Args.LineSpecSep = 'k:';
@@ -434,7 +435,7 @@ classdef prbfit
             Args.MarkerSize = 8;
             Args.LineWidth = 2;
             Args.FontSize = 20;
-            Args = parseArgs(varargin, Args, {'SameColor'});
+            Args = parseArgs(varargin, Args, {'SameColor', 'ShowR0'});
             %% plot fit_data
             fig = figure(gcf);
             errorbar(fit_data.xdata, fit_data.ydata, fit_data.yerr, Args.LineSpecData, 'linewidth', Args.LineWidth, 'markersize', Args.MarkerSize);
@@ -485,6 +486,7 @@ classdef prbfit
             fitres_str{end+1} = ['S = ' num2str(fit_res.S,'%3.2f') ' [mm]'];
             fitres_str{end+1} = ['\lambda_{int} = ' num2str(lam_int,'%3.2f') ' [mm]'];
             fitres_str{end+1} = ['R^2 = ' num2str(fit_res.r2,'%1.2f')];
+            fitres_str{end+1} = num2str(fit_res.r0, 'r0 = %3.2f [mm]');
             h = text(diff(xlim)*0.05+min(xlim),diff(ylim)*0.75+min(ylim), ...
                 fitres_str, 'fontsize', Args.FontSize, 'color', Args.TextColor);
             if Args.SameColor
@@ -1111,6 +1113,7 @@ classdef prbfit
             %% single call
             Args.ShowChannelNo = 0;
             Args.SameColor = 0;
+            Args.ShowR0 = 0;
             Args.LineSpecData = 'k*';
             Args.LineSpecFit = 'r';
             Args.LineSpecSep = 'k:';
@@ -1118,7 +1121,7 @@ classdef prbfit
             Args.MarkerSize = 8;
             Args.LineWidth = 2;
             Args.FontSize = 20;
-            Args = parseArgs(varargin, Args, {'ShowChannelNo', 'SameColor'});
+            Args = parseArgs(varargin, Args, {'ShowChannelNo', 'SameColor', 'ShowR0'});
             show_channel_no = Args.ShowChannelNo;
             Args = rmfield(Args, 'ShowChannelNo');
             varargin = struct2vararg(Args);
