@@ -43,7 +43,7 @@ classdef profile < radte
         function pobj = profile(varargin)
             pobj = pobj@radte(varargin{:});
         end
-        function loadbymds(pobj, time_range)
+        function loadbymds(pobj, time_range, varargin)
         %% read profile data from mds server
         % pobj.loadbymds
         % pobj.loadbymds(time_range)
@@ -75,6 +75,35 @@ classdef profile < radte
             sig.nodename = [sig.nodename, 'err'];
             sig.sigreaddata;
             pobj.err = sig.data;
+            % find channelno
+            Args.ChannelList = [];
+            Args.FrequencyList = [];
+            Args = parseArgs(varargin, Args);
+            if isempty(Args.ChannelList) || isempty(Args.FrequencyList)
+                switch pobj.ecetype
+                case 'hrs'
+                    sys_para = hrssys(pobj.shotno);
+                case 'mi'
+                    sys_para = misys(pobj.shotno);
+                otherwise
+                    error('Unrecognized ece_type!')
+                end
+                channel_list = sys_para.channelno;
+                frequency_list = sys_para.freqlist;
+            else
+                channel_list = Args.ChannelList;
+                frequency_list =  Args.FrequencyList;
+            end
+            t = mean(pobj.time);
+            shot_para = shotpara(pobj.shotno);
+            shot_para.read(t+[-0.5 0.5]);
+            s2p = spec2prof(shot_para, t);
+            [pos_radius, valid_ind] = s2p.map2radius(frequency_list);
+            channel_list = channel_list(valid_ind);
+            for i=1:length(pobj.radius)
+                ind = findvalue(pos_radius, pobj.radius(i));
+                pobj.channelno(i) = channel_list(ind);
+            end
         end
         function loadbycal(pobj, time_range, radius_range)
         %% calculate profile by raw data
