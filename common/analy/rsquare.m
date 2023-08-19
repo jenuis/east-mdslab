@@ -1,5 +1,5 @@
-
 function [r2, rmse] = rsquare(y,f,varargin)
+% https://ww2.mathworks.cn/matlabcentral/fileexchange/34492-r-square-the-coefficient-of-determination?s_tid=ta_fx_results
 % Compute coefficient of determination of data fit model and RMSE
 %
 % [r2 rmse] = rsquare(y,f)

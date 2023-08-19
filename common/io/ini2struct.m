@@ -1,5 +1,5 @@
 function Result = ini2struct(FileName)
-%https://ww2.mathworks.cn/matlabcentral/fileexchange/17177-ini2struct
+% https://ww2.mathworks.cn/matlabcentral/fileexchange/17177-ini2struct
 %==========================================================================
 %  Author: Andriy Nych ( nych.andriy@gmail.com )
 % Version:        733341.4155741782200

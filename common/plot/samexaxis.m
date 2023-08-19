@@ -1,4 +1,5 @@
 function samexaxis(varargin)
+% https://ww2.mathworks.cn/matlabcentral/fileexchange/7169-samexaxis-nice-subplots-with-same-x-axis?s_tid=ta_fx_results
 %% helper function to clean up subplots that have common x axises
 %
 % USAGE: samexaxis([optionalarguments])
