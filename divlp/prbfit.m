@@ -367,8 +367,10 @@ classdef prbfit
             %% set fit boundary
             ub = Args.FitBdry(1,:);
             lb = Args.FitBdry(2,:);
+            num_fit_vars = 5;
             if Args.ZeroBg
                 ub(5) = 0; lb(5) = 0;
+                num_fit_vars = 4;
             elseif fieldexist(fit_data, 'ymin') && isnumeric(fit_data.ymin)
                 ub(5) = sum(fit_data.ymin);
                 lb(5) = -diff(fit_data.ymin);
@@ -383,6 +385,7 @@ classdef prbfit
             [~, fit_res] = prbfit.fun_eich(coeff);
             fit_res.r2 = r2;
             fit_res.fval = fval;
+            fit_res.chi2 = chi_squared(fit_data, fit_res, num_fit_vars);
         end
         
         function lambda_int = cal_lambda_int(fit_data, fit_res, varargin)
@@ -485,6 +488,7 @@ classdef prbfit
             fitres_str = {['\lambda = ' num2str(fit_res.lam,'%3.2f') ' [mm]']};
             fitres_str{end+1} = ['S = ' num2str(fit_res.S,'%3.2f') ' [mm]'];
             fitres_str{end+1} = ['\lambda_{int} = ' num2str(lam_int,'%3.2f') ' [mm]'];
+            fitres_str{end+1} = ['\chi^2 = ' num2str(prbfit.chi_squared(fit_data, fit_res), '%3.2f')];
             fitres_str{end+1} = ['R^2 = ' num2str(fit_res.r2,'%1.2f')];
             fitres_str{end+1} = num2str(fit_res.r0, 'r0 = %3.2f [mm]');
             h = text(diff(xlim)*0.05+min(xlim),diff(ylim)*0.75+min(ylim), ...
@@ -813,6 +817,20 @@ classdef prbfit
                 end
                 return
             end
+            if haselement({'chi2', 'chi_squared'}, field_name)
+                if fieldexist(fits(1).fit_res, 'chi2')
+                    for i=1:length(fits)
+                        res(end+1) = fits(i).fit_res.chi2;
+                    end
+                    return
+                end
+                
+                for i=1:length(fits)
+                    fit_data = fits(i).fit_data;
+                    fit_res = fits(i).fit_res;
+                    res(end+1) = prbfit.chi_squared(fit_data, fit_res);
+                end
+            end
             if isequal(field_name, 'time')
                 res = [fits.time];
                 return
@@ -832,6 +850,20 @@ classdef prbfit
                 end
                 return
             end
+        end
+        
+        function chi2 = chi_squared(fit_data, fit_res, num_fit_vars)
+            if nargin == 2
+                num_fit_vars = 5;
+                if fit_res.bg == 0
+                    num_fit_vars = 4;
+                end
+            end
+            
+            chi2 = chi_squared(...
+                fit_data.ydata,...
+                prbfit.fun_eich(fit_res, fit_data.xdata), ...
+                num_fit_vars);
         end
         
         function [fits_bit, fnames] = fits_bit(fits_res1, fits_res2)
