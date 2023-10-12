@@ -385,7 +385,7 @@ classdef prbfit
             [~, fit_res] = prbfit.fun_eich(coeff);
             fit_res.r2 = r2;
             fit_res.fval = fval;
-            fit_res.chi2 = chi_squared(fit_data, fit_res, num_fit_vars);
+            fit_res.chi2 = prbfit.chi_squared(fit_data, fit_res, num_fit_vars);
         end
         
         function lambda_int = cal_lambda_int(fit_data, fit_res, varargin)
@@ -431,6 +431,7 @@ classdef prbfit
             %% check arguments
             Args.SameColor = 0;
             Args.ShowR0 = 0;
+            Args.NoError = 0;
             Args.LineSpecData = 'k*';
             Args.LineSpecFit = 'r';
             Args.LineSpecSep = 'k:';
@@ -438,17 +439,20 @@ classdef prbfit
             Args.MarkerSize = 8;
             Args.LineWidth = 2;
             Args.FontSize = 20;
-            Args = parseArgs(varargin, Args, {'SameColor', 'ShowR0'});
+            Args = parseArgs(varargin, Args, {'SameColor', 'ShowR0', 'NoError'});
             %% plot fit_data
             fig = figure(gcf);
-            errorbar(fit_data.xdata, fit_data.ydata, fit_data.yerr, Args.LineSpecData, 'linewidth', Args.LineWidth, 'markersize', Args.MarkerSize);
+            if Args.NoError 
+                plot(fit_data.xdata, fit_data.ydata, Args.LineSpecData, 'linewidth', Args.LineWidth, 'markersize', Args.MarkerSize);
+            else
+                errorbar(fit_data.xdata, fit_data.ydata, fit_data.yerr, Args.LineSpecData, 'linewidth', Args.LineWidth, 'markersize', Args.MarkerSize);
+            end
             if Args.SameColor
                 h = get(gca,'children');
                 color = h(1).Color;
             end
             set(gcf, 'color', 'w');
             set(gca, 'fontsize', Args.FontSize);
-%             setfigpostion('left');
             y_label = prbbase.prb_get_phytype(fit_data.ytype);
             if isequal(fit_data.xtype, 'dist2div')
                 x_label = 'Distance to Divtor Corner [mm]';
@@ -1062,7 +1066,7 @@ classdef prbfit
             xlabel('Time [s]')
             xlim([min(x) max(x)])
             set(gcf, 'color', 'w');
-            setfigpostion('left');
+            setfigposition('left');
         end
         
         function fig = fits_profile(fits_res, t, varargin)
@@ -1097,7 +1101,7 @@ classdef prbfit
                 end
                 
                 fig = figure(gcf);
-                setfigpostion
+                setfigposition
                 legend_str = {};
                 y_lims = [];
                 
@@ -1203,7 +1207,7 @@ classdef prbfit
             h = 0.95/row_no;
             w = 0.95/col_no;
             fig = figure;
-            setfigpostion
+            setfigposition
             for i=1:length(inds)
                 r = floor((i-1)/col_no)+1;
                 c = i-(r-1)*col_no;

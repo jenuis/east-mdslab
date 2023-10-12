@@ -1,4 +1,4 @@
-function setfigpostion(position)
+function setfigposition(position)
 if nargin == 0
     fig_size = [0 0 1 1];
 else

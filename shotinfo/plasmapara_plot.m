@@ -50,7 +50,7 @@ fig_dw = 0.9/col_no;
 for i=1:sig_no
     fig_no = floor((i-1)/row_no);
     fig(330+fig_no)
-    setfigpostion([fig_pos_w_s+fig_no*fig_dw 0.1 fig_dw 0.9])
+    setfigposition([fig_pos_w_s+fig_no*fig_dw 0.1 fig_dw 0.9])
     set(gca, 'fontsize', 20)
     sig_name = sig_list{i};
     if ~fieldexist(pp, sig_name)

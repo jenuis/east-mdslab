@@ -96,7 +96,7 @@ xname_len = length(XName);
 row_no = floor(sqrt(xname_len));
 col_no = ceil(xname_len/row_no);
 fig
-setfigpostion
+setfigposition
 
 for i=1:xname_len
     var_ind = adata_getrowno(XName{i});
