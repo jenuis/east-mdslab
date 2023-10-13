@@ -520,7 +520,7 @@ classdef prbfit
                 inds = find((time-s) <= time_slice_len);
                 f = time(inds(end));
                 time(inds) = [];
-                if abs(f - s - time_slice_len) < dt
+                if abs(f - s - time_slice_len) < 1.001*dt
                     time_slices{end+1} = [s f];
                 end
             end
