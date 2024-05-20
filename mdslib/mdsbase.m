@@ -1,6 +1,6 @@
 %% Base class for mdslib
 % -------------------------------------------------------------------------
-% Copyright 2019 Xiang Liu
+% Copyright 2019-2024 Xiang Liu
 % Contact: Xiang Liu, xliu.fusion@outlook.com
 % This file is part of EAST-MDSLAB. You should have recieved a copy of the
 % MIT license. If not, see <https://mit-license.org>
@@ -33,9 +33,7 @@ classdef (Abstract) mdsbase < handle
             end
         end
     end
-    methods(Static)
-    %% static methods
-    end
+        
     methods(Access = protected)
     %% private methods
         function shotnocheck(inst)
