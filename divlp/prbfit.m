@@ -431,7 +431,7 @@ classdef prbfit
             %% check arguments
             Args.SameColor = 0;
             Args.ShowR0 = 0;
-            Args.NoError = 0;
+            Args.NoError = ~fieldexist(fit_data, 'yerr');
             Args.LineSpecData = 'k*';
             Args.LineSpecFit = 'r';
             Args.LineSpecSep = 'k:';
@@ -466,9 +466,11 @@ classdef prbfit
             x_lim = [min(fit_data.xdata) max(fit_data.xdata)];
             x_lim = x_lim + [-1 1]*diff(x_lim)*.05;
             xlim(x_lim);
-            y_lim = [min(fit_data.ydata -fit_data.yerr) max(fit_data.ydata+fit_data.yerr)];
-            y_lim = y_lim + [-1 1]*diff(y_lim)*.05;
-            ylim(y_lim);
+            if ~Args.NoError
+                y_lim = [min(fit_data.ydata -fit_data.yerr) max(fit_data.ydata+fit_data.yerr)];
+                y_lim = y_lim + [-1 1]*diff(y_lim)*.05;
+                ylim(y_lim);
+            end
             if nargin == 1
                 return
             end
