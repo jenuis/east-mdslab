@@ -40,14 +40,17 @@ classdef mds < handle
             % set MDS server IP address
             ip_addr = getenv('MDS_SERVER');
             if isempty(ip_addr)
-                disp(['Enviroment variable "MDS_SERVER" not set. Using default ("' self.IpAddr '").'])
+                warning(['Enviroment variable "MDS_SERVER" not set. Using default ("' self.IpAddr '").'])
+                setenv('MDS_SERVER', self.IpAddr);
             else
                 self.IpAddr = ip_addr;
             end
             % set valid tree name list
             tree_name_str = getenv('MDS_TREE_NAMES');
             if isempty(tree_name_str)
-                disp('Enviroment variable "MDS_TREE_NAMES" not set. Using default.');
+                tree_name_str = strjoin(self.TreeNameList, ','); 
+                warning(['Enviroment variable "MDS_TREE_NAMES" not set. Using default ("' tree_name_str '").']);
+                setenv('MDS_TREE_NAMES', tree_name_str);
             else
                 self.TreeNameList = strsplit(tree_name_str, ',');
             end
