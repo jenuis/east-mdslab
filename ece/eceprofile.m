@@ -1,6 +1,6 @@
 %% Subclass of radte implemented to get profile distribution for ece
 % -------------------------------------------------------------------------
-% Copyright 2019 Xiang Liu
+% Copyright 2019-2024 Xiang Liu
 % Contact: Xiang Liu, xliu.fusion@outlook.com
 % This file is part of EAST-MDSLAB. You should have recieved a copy of the
 % MIT license. If not, see <https://mit-license.org>
@@ -9,8 +9,8 @@
 % PROFILE class holds properties and methods of ECE profile
 % Derived from radte
 %   Instance:
-%       pobj = profile
-%       pobj = profile(shotno, ece_type)
+%       self = eceprofile
+%       self = eceprofile(shotno, ece_type)
 %   Props:
 %       shotno
 %       ecetype
@@ -21,11 +21,11 @@
 %       te
 %       err
 %   Methods:
-%       pobj.loadbymds(time_range)
-%       pobj.loadbycal(time_range)
-%       pobj.calprof(spec, shot_para)
-%       pobj.view(time_slice, varargin) check varplot for more details
-classdef profile < radte
+%       self.loadbymds(time_range)
+%       self.loadbycal(time_range)
+%       self.calprof(spec, shot_para)
+%       self.view(time_slice, varargin) check varplot for more details
+classdef eceprofile < radte
     properties
         radius
         z
@@ -34,57 +34,58 @@ classdef profile < radte
     end
     
     methods(Access = protected)
-        function x = getxaxis(pobj)
-            x = pobj.radius;
+        function x = getxaxis(self)
+            x = self.radius;
         end
     end
     
     methods
-        function pobj = profile(varargin)
-            pobj = pobj@radte(varargin{:});
+        function self = eceprofile(varargin)
+            self = self@radte(varargin{:});
         end
-        function loadbymds(pobj, time_range, varargin)
+        
+        function loadbymds(self, time_range, varargin)
         %% read profile data from mds server
-        % pobj.loadbymds
-        % pobj.loadbymds(time_range)
+        % self.loadbymds
+        % self.loadbymds(time_range)
         
             % check arguments in
             if nargin == 1
                 time_range = [];
             end
-            pobj.check_load_args(time_range);
+            self.check_load_args(time_range);
             
             % get a signal instance
             sig = signal;
-            sig.shotno = pobj.shotno;
-            sig.treename = pobj.TreeName;
+            sig.shotno = self.shotno;
+            sig.treename = self.TreeName;
             % read major radius
-            sig.nodename = ['r_', pobj.ecetype];
+            sig.nodename = ['r_', self.ecetype];
             sig.sigreaddata;
-            pobj.radius = sig.data;
+            self.radius = sig.data;
             % read vertical z
-            sig.nodename = ['z_', pobj.ecetype];
+            sig.nodename = ['z_', self.ecetype];
             sig.sigreaddata;
-            pobj.z = sig.data;
+            self.z = sig.data;
             % read Te
-            sig.nodename = ['te_', pobj.ecetype];
-            sig.sigread(pobj.load_time_range);
-            pobj.time = sig.time;
-            pobj.te = sig.data;
+            sig.nodename = ['te_', self.ecetype];
+            sig.sigread(self.load_time_range);
+            self.time = sig.time;
+            self.te = sig.data;
             % read Te Error
             sig.nodename = [sig.nodename, 'err'];
             sig.sigreaddata;
-            pobj.err = sig.data;
+            self.err = sig.data;
             % find channelno
             Args.ChannelList = [];
             Args.FrequencyList = [];
             Args = parseArgs(varargin, Args);
             if isempty(Args.ChannelList) || isempty(Args.FrequencyList)
-                switch pobj.ecetype
+                switch self.ecetype
                 case 'hrs'
-                    sys_para = hrssys(pobj.shotno);
+                    sys_para = hrssys(self.shotno);
                 case 'mi'
-                    sys_para = misys(pobj.shotno);
+                    sys_para = misys(self.shotno);
                 otherwise
                     error('Unrecognized ece_type!')
                 end
@@ -94,21 +95,22 @@ classdef profile < radte
                 channel_list = Args.ChannelList;
                 frequency_list =  Args.FrequencyList;
             end
-            t = mean(pobj.time);
-            shot_para = shotpara(pobj.shotno);
+            t = mean(self.time);
+            shot_para = shotpara(self.shotno);
             shot_para.read(t+[-0.5 0.5]);
             s2p = spec2prof(shot_para, t);
             [pos_radius, valid_ind] = s2p.map2radius(frequency_list);
             channel_list = channel_list(valid_ind);
-            for i=1:length(pobj.radius)
-                ind = findvalue(pos_radius, pobj.radius(i));
-                pobj.channelno(i) = channel_list(ind);
+            for i=1:length(self.radius)
+                ind = findvalue(pos_radius, self.radius(i));
+                self.channelno(i) = channel_list(ind);
             end
         end
-        function loadbycal(pobj, time_range, radius_range)
+        
+        function loadbycal(self, time_range, radius_range)
         %% calculate profile by raw data
-        % pobj.loadbycal
-        % pobj.loadbycal(time_range)
+        % self.loadbycal
+        % self.loadbycal(time_range)
         
         % check arguments
         if nargin < 2
@@ -117,114 +119,116 @@ classdef profile < radte
         if nargin < 3
             radius_range = [0 inf];
         end
-        pobj.check_load_args(time_range);
+        self.check_load_args(time_range);
         
         % read shot para
-        shot_para = shotpara(pobj.shotno);
+        shot_para = shotpara(self.shotno);
         shot_para.read;
-        if isempty(pobj.load_time_range)
+        if isempty(self.load_time_range)
             time_median = mean(shot_para.pulseflat);
         else
-            time_median = mean(pobj.load_time_range);
+            time_median = mean(self.load_time_range);
         end
         
         % collect system parameters
-        switch pobj.ecetype
+        switch self.ecetype
             case 'hrs'
-                sys_para = hrssys(pobj.shotno);
-                calib_fac = hrscalib(pobj.shotno);
+                sys_para = hrssys(self.shotno);
+                calib_fac = hrscalib(self.shotno);
             case 'mi'
-                sys_para = misys(pobj.shotno);
-                calib_fac = micalib(pobj.shotno);
+                sys_para = misys(self.shotno);
+                calib_fac = micalib(self.shotno);
             otherwise
                 error('Unrecognized ece_type!')
         end
         % set radius and get valid channels
         s2p = spec2prof(shot_para, time_median);
-        [pobj.radius, valid_ind] = s2p.map2radius(sys_para.freqlist);
-        radius_inds = pobj.radius <= max(radius_range) & ...
-            pobj.radius >= min(radius_range);
+        [self.radius, valid_ind] = s2p.map2radius(sys_para.freqlist);
+        radius_inds = self.radius <= max(radius_range) & ...
+            self.radius >= min(radius_range);
         cf_inds = ~isnan(calib_fac.cf(valid_ind));
         if size(radius_inds, 1) ~= size(cf_inds, 1)
             cf_inds = cf_inds';
         end
         radius_inds = radius_inds & cf_inds;
-        pobj.radius = pobj.radius(radius_inds);
+        self.radius = self.radius(radius_inds);
         valid_ind = valid_ind(radius_inds);
-        pobj.z = antenna.calz(pobj.radius);
+        self.z = antenna.calz(self.radius);
         channel_list = sys_para.channelno(valid_ind);
         % collect raw data and calibration factor
-        switch pobj.ecetype
+        switch self.ecetype
             case 'hrs'
-                raw_sig = hrsraw(pobj.shotno, 'tr', pobj.load_time_range,...
+                raw_sig = hrsraw(self.shotno, 'tr', self.load_time_range,...
                     'cl', channel_list);
             case 'mi'
-                raw_sig = miraw(pobj.shotno, 'cl', channel_list);
+                raw_sig = miraw(self.shotno, 'cl', channel_list);
             otherwise
                 error('Unrecognized ece_type!')
         end
         % calculate spectra
-        spec = spectra(pobj.shotno, pobj.ecetype);
+        spec = spectra(self.shotno, self.ecetype);
         spec.calspec(raw_sig, calib_fac);
         % set time, te and err
-        pobj.time = spec.time;
-        pobj.te = spec.te;
-        pobj.err = spec.err;
-        pobj.channelno = channel_list;
+        self.time = spec.time;
+        self.te = spec.te;
+        self.err = spec.err;
+        self.channelno = channel_list;
         end
-        function calprof(pobj, spec, shot_para)
+        
+        function calprof(self, spec, shot_para)
         %% calculate profile by spectra and shotpara
-        % pobj.calprof(spec, shot_para)
+        % self.calprof(spec, shot_para)
             if spec.shotno ~= shot_para.shotno
                 error('shotno of arguments mismatch!');
             end
             % set common properties
-            pobj.ecetype = spec.ecetype;
-            pobj.time = spec.time;
-            pobj.shotno = spec.shotno;
+            self.ecetype = spec.ecetype;
+            self.time = spec.time;
+            self.shotno = spec.shotno;
             % set radius and get valid channels
-            s2p = spec2prof(shot_para, mean(pobj.time));
-            [pobj.radius, valid_ind] = s2p.map2radius(spec.freq);
-            pobj.z = antenna.calz(pobj.radius);
+            s2p = spec2prof(shot_para, mean(self.time));
+            [self.radius, valid_ind] = s2p.map2radius(spec.freq);
+            self.z = antenna.calz(self.radius);
             % set te and err
-            pobj.te = spec.te(valid_ind, :);
+            self.te = spec.te(valid_ind, :);
             if ~isempty(spec.err)
-            %if ~isempty(pobj.err)
-                pobj.err = spec.err(valid_ind, :);
+            %if ~isempty(self.err)
+                self.err = spec.err(valid_ind, :);
             end
-            pobj.channelno = valid_ind;
+            self.channelno = valid_ind;
         end
-        function view(pobj, time_slice, varargin)
+        
+        function view(self, time_slice, varargin)
         %% view profile of sepecific time
-        % pobj.viewprof(time_slice)
-           % plot_title = [upper(pobj.ecetype) ' Te profile for #'...
-           %     num2str(pobj.shotno) ' @' num2str(time_slice,'%3.3f') 's'];
-            plot_title = [' Te profile for #' num2str(pobj.shotno)];
+        % self.viewprof(time_slice)
+           % plot_title = [upper(self.ecetype) ' Te profile for #'...
+           %     num2str(self.shotno) ' @' num2str(time_slice,'%3.3f') 's'];
+            plot_title = [' Te profile for #' num2str(self.shotno)];
             varargin = revvarargin(varargin,...
                 'XLabel','Major Radius [m]',...
                 'YLabel','Te [eV]',...
                 'Title', plot_title);
-            view@radte(pobj, time_slice, varargin);
+            view@radte(self, time_slice, varargin);
         end
-        function sortbyradius(pobj)
-            [pobj.radius, sort_ind] = sort(pobj.radius);
-            if ~isempty(pobj.z)
-                pobj.z = pobj.z(sort_ind);
+        
+        function sortbyradius(self)
+            [self.radius, sort_ind] = sort(self.radius);
+            if ~isempty(self.z)
+                self.z = self.z(sort_ind);
             end
-            if ~isempty(pobj.psinorm)
-                pobj.psinorm = pobj.psinorm(sort_ind);
+            if ~isempty(self.psinorm)
+                self.psinorm = self.psinorm(sort_ind);
             end
-            if ~isempty(pobj.te)
-                pobj.te = pobj.te(sort_ind, :);
+            if ~isempty(self.te)
+                self.te = self.te(sort_ind, :);
             end
-            if ~isempty(pobj.err)
-                pobj.err = pobj.err(sort_ind, :);
+            if ~isempty(self.err)
+                self.err = self.err(sort_ind, :);
             end
-            if ~isempty(pobj.channelno)
-                pobj.channelno = pobj.channelno(sort_ind);
+            if ~isempty(self.channelno)
+                self.channelno = self.channelno(sort_ind);
             end
         end
     end
-    
 end
 
