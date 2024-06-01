@@ -1,13 +1,20 @@
-function addpath_eastmds(sub_module)
+function addpath_mdslab(sub_module, operation)
+%% check argument
+if nargin < 2
+    operation = 'add';
+end
+if nargin < 1
+    sub_module = '';
+end
 %% get current dir
 curr_dir = fileparts(mfilename('fullpath'));
 %% add necessary path
-addpathchk('east-mdslab', 'mdslib', curr_dir)
+repopathctrl(curr_dir, 'mdslib', operation);
 assert(exist('addpath_matutil.m','file') == 2, ...
     '"matlab-utils" not in the path! Use "git clone https://github.com/jenuis/matlab-utils.git" to download the repo and add the root of the repo into "MATLABPATH".')
-addpath_matutil();
-if nargin < 1
+addpath_matutil('', operation);
+if isempty(sub_module)
     return
 end
 %% add sub module
-addpathchk('east-mdslab', sub_module, curr_dir);
+repopathctrl(curr_dir, sub_module, operation);
