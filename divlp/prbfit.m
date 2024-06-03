@@ -255,25 +255,14 @@ classdef prbfit
                 end
                 %% get inds for adjacent points            
                 inds_list = {};
-                i = 1;
-                while(i < len)
-                    xi = fit_data.xdata(i);
-                    inds = i;
-                    for j=(i+1):len
-                        xj = fit_data.xdata(j);
-                        if abs(xj-xi) > Args.XThres
-                            inds_list{end+1} = inds;
-                            break
-                        end
-                        inds(end+1) = j;
-                        i = j;
+                ind_start = 1;
+                for i=2:len
+                    if fit_data.xdata(i) - fit_data.xdata(ind_start) > Args.XThres
+                        inds_list{end+1} = ind_start:i-1;
+                        ind_start = i;
                     end
-                    i = i+1;
                 end
-                inds_list{end+1} = inds;
-                if fit_data.xdata(end) - fit_data.xdata(end-1) > Args.XThres
-                    inds_list{end+1} = len;
-                end
+                inds_list{end+1} = ind_start:len;
                 %% average by inds
                 for i=1:length(inds_list)
                     inds = inds_list{i};
