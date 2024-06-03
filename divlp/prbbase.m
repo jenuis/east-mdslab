@@ -13,6 +13,7 @@ classdef prbbase < mdsbase
         DER_TYPE = {'j_s', 'T_e', 'n_e', 'p_e', 'q_{par}'};
         PHY_TYPE = [prbbase.PRB_TYPE, prbbase.DER_TYPE{:}];
     end
+    
     properties(Access=protected)
         position_tag
         port_name
@@ -20,6 +21,7 @@ classdef prbbase < mdsbase
         head_area
         daq_info
     end
+    
     methods(Access=protected, Static)        
         function probe_type = check_prbtype(probe_type)
             probe_type = argstrchk(prbbase.PRB_TYPE, probe_type);
@@ -34,6 +36,7 @@ classdef prbbase < mdsbase
         end
         
     end
+    
     methods(Static)
         function res = prb_get_const(const_type, use_original)
             if nargin == 1
@@ -71,49 +74,50 @@ classdef prbbase < mdsbase
             end
         end
     end
+    
     methods(Access=protected)
-        function shotno = check_shotno(inst, shotno)
+        function shotno = check_shotno(self, shotno)
             if nargin == 2
-                inst.shotno = shotno;
+                self.shotno = shotno;
             end
-            inst.shotnocheck();
-            shotno = inst.shotno;
+            self.shotnocheck();
+            shotno = self.shotno;
         end
         
-        function position_tag = check_postag(inst, position_tag)
+        function position_tag = check_postag(self, position_tag)
             if nargin == 2
-                inst.position_tag = position_tag;
+                self.position_tag = position_tag;
             end
-            if isempty(inst.position_tag)
+            if isempty(self.position_tag)
                 error('please call "prb_set_postag" to set attribute "position_tag"!')
             end
-            inst.position_tag = argstrchk(prbbase.POS_TAG, inst.position_tag);
-            position_tag = inst.position_tag;
+            self.position_tag = argstrchk(prbbase.POS_TAG, self.position_tag);
+            position_tag = self.position_tag;
         end
         
-        function port_name = check_portname(inst, port_name)
+        function port_name = check_portname(self, port_name)
             if nargin == 2
-                inst.port_name = port_name;
+                self.port_name = port_name;
             end
-            if isnumeric(inst.port_name) && isempty(inst.port_name)
+            if isnumeric(self.port_name) && isempty(self.port_name)
                 error('please call "prb_set_portname" to set attribute "port_name"!')
             end
-            inst.port_name = argstrchk(inst.prb_list_portnames(), inst.port_name);
-            port_name = inst.port_name;
+            self.port_name = argstrchk(self.prb_list_portnames(), self.port_name);
+            port_name = self.port_name;
         end
         
-        function distrib_info = check_distinfo(inst)
-            if isempty(inst.distrib_info)
+        function distrib_info = check_distinfo(self)
+            if isempty(self.distrib_info)
                 error('please call "prb_load_sys" to set attribute "distrb_info"!')
             end
-            distrib_info = inst.distrib_info;
+            distrib_info = self.distrib_info;
         end
         
-        function head_area = check_headarea(inst)
-            if isempty(inst.head_area)
+        function head_area = check_headarea(self)
+            if isempty(self.head_area)
                 error('please call "prb_load_sys" to set attribute "head_area"!')
             end
-            head_area = inst.head_area;
+            head_area = self.head_area;
         end
         
         function val = read_config(~, key, ini_file)
@@ -130,58 +134,59 @@ classdef prbbase < mdsbase
             val = conf.(key);
         end
     end
+    
     methods
-        function inst = prbbase(shotno, position_tag, port_name)
+        function self = prbbase(shotno, position_tag, port_name)
             if nargin >= 1
-                inst.check_shotno(shotno);
-                inst.prb_load_sys();
+                self.check_shotno(shotno);
+                self.prb_load_sys();
             end
             if nargin >= 2
-                inst.check_postag(position_tag);
+                self.check_postag(position_tag);
             end
             if nargin >= 3
-                inst.check_portname(port_name);
+                self.check_portname(port_name);
             end
         end
         
-        function prb_set_postag(inst, pos_tag)
-            inst.check_postag(pos_tag);
+        function prb_set_postag(self, pos_tag)
+            self.check_postag(pos_tag);
         end
         
-        function prb_set_portname(inst, port_name)
-            inst.check_portname(port_name);
+        function prb_set_portname(self, port_name)
+            self.check_portname(port_name);
         end
         
-        function postag = prb_get_postag(inst)
-            postag = inst.check_postag();
+        function postag = prb_get_postag(self)
+            postag = self.check_postag();
         end
         
-        function portname = prb_get_portname(inst)
-            portname = inst.check_portname();
+        function portname = prb_get_portname(self)
+            portname = self.check_portname();
         end
         
-        function prb_load_sys(inst)
-            shotno = inst.check_shotno();
-            sys_path = fullfile(inst.read_config('user_path'), 'sys');
+        function prb_load_sys(self)
+            shotno = self.check_shotno();
+            sys_path = fullfile(self.read_config('user_path'), 'sys');
             addpath(sys_path);
-            if isempty(inst.distrib_info)
-                inst.distrib_info = divprb_distrib_info(shotno);
+            if isempty(self.distrib_info)
+                self.distrib_info = divprb_distrib_info(shotno);
             end
-            if isempty(inst.head_area)
-                inst.head_area = divprb_head_area(shotno);
+            if isempty(self.head_area)
+                self.head_area = divprb_head_area(shotno);
             end
-            if isempty(inst.daq_info)
-                inst.daq_info = divprb_daq_info(shotno);
+            if isempty(self.daq_info)
+                self.daq_info = divprb_daq_info(shotno);
             end
             rmpath(sys_path);
         end
                
-        function res = prb_extract_distinfo(inst, data_type)
+        function res = prb_extract_distinfo(self, data_type)
             %% extract distrib_info by position_tag
-            dist_info = inst.check_distinfo();
-            res_pos = dist_info.(inst.check_postag());
+            dist_info = self.check_distinfo();
+            res_pos = dist_info.(self.check_postag());
             %% locate portname
-            [~, port_ind] = haselement(res_pos(:,1), inst.check_portname());
+            [~, port_ind] = haselement(res_pos(:,1), self.check_portname());
             res_port = res_pos(port_ind,:);
             %% locate data_type
             switch data_type
@@ -200,15 +205,15 @@ classdef prbbase < mdsbase
             end
         end
         
-        function res = prb_extract_daqinfo(inst, info_type, prb_type)
+        function res = prb_extract_daqinfo(self, info_type, prb_type)
             switch lower(info_type)
                 case 'sign'
                     field_names = {...
-                        inst.check_postag(),...
-                        inst.check_portname(),...
-                        inst.check_prbtype(prb_type)};
+                        self.check_postag(),...
+                        self.check_portname(),...
+                        self.check_prbtype(prb_type)};
 
-                    res = inst.daq_info.sign;
+                    res = self.daq_info.sign;
                     for i=1:length(field_names)
                         fname = field_names{i};
                         if ~fieldexist(res, fname)
@@ -222,18 +227,18 @@ classdef prbbase < mdsbase
             end
         end
         
-        function res = prb_list_portnames(inst)
-            dist_info = inst.check_distinfo();
-            res_pos = dist_info.(inst.check_postag());
+        function res = prb_list_portnames(self)
+            dist_info = self.check_distinfo();
+            res_pos = dist_info.(self.check_postag());
             res = res_pos(:,1);
         end
         
-        function res = prb_extract_headarea(inst)
-            A = inst.check_headarea();
-            res = A.(inst.check_postag());
+        function res = prb_extract_headarea(self)
+            A = self.check_headarea();
+            res = A.(self.check_postag());
         end
                 
-        function [res, msg] = prb_is_samebranch(inst, test)
+        function [res, msg] = prb_is_samebranch(self, test)
             if isa(test, 'prbbase')
                 shotno = test.shotno;
                 positiontag = test.prb_get_postag();
@@ -247,13 +252,13 @@ classdef prbbase < mdsbase
             end
             res = 1;
             msg = [];
-            if ~isequal(inst.check_shotno(), shotno)
+            if ~isequal(self.check_shotno(), shotno)
                 res = 0; msg = 'shotno'; return
             end
-            if ~isequal(inst.check_postag(), positiontag)
+            if ~isequal(self.check_postag(), positiontag)
                 res = 0; msg = 'postition_tag'; return
             end
-            if ~isequal(inst.check_portname(), portname)
+            if ~isequal(self.check_portname(), portname)
                 res = 0; msg = 'port_name'; return
             end
         end

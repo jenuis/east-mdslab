@@ -10,12 +10,14 @@ classdef prbdatacal < prbbase & signal
     properties
         phy_type
     end
+    
     properties(Access=protected)
         prbd_cell
         phytype_list
     end
+    
     methods(Access=protected)
-        function prbdcell_check(inst, prbd_cell)
+        function prbdcell_check(self, prbd_cell)
             %% prbdataraw or prbdatacal type
             if isa(prbd_cell, 'prbdataraw') || isa(prbd_cell, 'prbdatacal')
                 prbd_cell = {prbd_cell};
@@ -27,7 +29,7 @@ classdef prbdatacal < prbbase & signal
             phytypes = {};
             datasizes = [];
             for i=1:length(prbd_cell)
-                [res, msg] = inst.prb_is_samebranch(prbd_cell{i});
+                [res, msg] = self.prb_is_samebranch(prbd_cell{i});
                 if ~res
                     error(['prbd_cell{' num2str(i) '}:' msg ' not match!'])
                 end
@@ -46,105 +48,106 @@ classdef prbdatacal < prbbase & signal
             if length(unique(datasizes)) ~= 2
                 error('elements in prbd_cell have different data size!')
             end
-            inst.prbd_cell = prbd_cell;
-            inst.phytype_list = phytypes;
+            self.prbd_cell = prbd_cell;
+            self.phytype_list = phytypes;
         end
         
-        function prbd = prbdcell_extract(inst, phy_type)
-            [found, ind] = haselement(inst.phytype_list, phy_type);
+        function prbd = prbdcell_extract(self, phy_type)
+            [found, ind] = haselement(self.phytype_list, phy_type);
             if ~found
                 error(['prbd_cell has no "' phy_type '" data!'])
             end
-            prbd = inst.prbd_cell{ind};
+            prbd = self.prbd_cell{ind};
         end
         
-        function set_attribs(inst, pd_raw)
-            inst.treename = pd_raw.treename;
-            inst.nodename = pd_raw.nodename;
-            for i=1:length(inst.nodename)
-                inst.nodename{i} = strrep(inst.nodename{i}, pd_raw.phy_type, inst.phy_type);
+        function set_attribs(self, pd_raw)
+            self.treename = pd_raw.treename;
+            self.nodename = pd_raw.nodename;
+            for i=1:length(self.nodename)
+                self.nodename{i} = strrep(self.nodename{i}, pd_raw.phy_type, self.phy_type);
             end
         end
         
-        function cal_js(inst)            
-            A = inst.prb_extract_headarea();
-            is = inst.prbdcell_extract('is');
+        function cal_js(self)            
+            A = self.prb_extract_headarea();
+            is = self.prbdcell_extract('is');
             
-            inst.phy_type = 'js';
-            inst.time = is.time;
-%             inst.data = abs(is.data)./1.5./A;%[Acm-2]: ion saturation current density, R_is=1.5 Ohm, Ap=2.5mm^2@2014.
-            inst.data = is.data./1.5./A; % backgrounds have already been considered, this could verify if a signal is valid or not
-            inst.set_attribs(is);
+            self.phy_type = 'js';
+            self.time = is.time;
+%             self.data = abs(is.data)./1.5./A;%[Acm-2]: ion saturation current density, R_is=1.5 Ohm, Ap=2.5mm^2@2014.
+            self.data = is.data./1.5./A; % backgrounds have already been considered, this could verify if a signal is valid or not
+            self.set_attribs(is);
         end
         
-        function cal_te(inst)
-            vp = inst.prbdcell_extract('vp');
-            vf = inst.prbdcell_extract('vf');
+        function cal_te(self)
+            vp = self.prbdcell_extract('vp');
+            vf = self.prbdcell_extract('vf');
             te_val = (51*vp.data - 21*vf.data)./log(2);%[eV]: electron temperature.
 %             te_val = te_val.*(te_val>=0.1) + 1*(te_val<0.1); % 1* can not be omitted, otherwise, data type will be logical
 %             te_val(te_val<0.1) = nan;
             
-            inst.phy_type = 'te';
-            inst.time = vp.time;
-            inst.data = te_val;
-            inst.set_attribs(vp);
+            self.phy_type = 'te';
+            self.time = vp.time;
+            self.data = te_val;
+            self.set_attribs(vp);
         end
         
-        function cal_ne(inst)
-            A  = inst.prb_extract_headarea();
-            is = inst.prbdcell_extract('is');
-            te = inst.prbdcell_extract('te'); te.data=abs(te.data);
+        function cal_ne(self)
+            A  = self.prb_extract_headarea();
+            is = self.prbdcell_extract('is');
+            te = self.prbdcell_extract('te'); te.data=abs(te.data);
             ne_val = (abs(is.data)*73.3./sqrt(te.data))/sqrt(2)*8.22/A*1e-1;%[10^19m-3]:electron density, According to Guo and JET probe thesis
             
-            inst.phy_type = 'ne';
-            inst.time = is.time;
-            inst.data = ne_val;
-            inst.set_attribs(is);
+            self.phy_type = 'ne';
+            self.time = is.time;
+            self.data = ne_val;
+            self.set_attribs(is);
         end
         
-        function cal_pe(inst)
-            te = inst.prbdcell_extract('te');
-            ne = inst.prbdcell_extract('ne');
+        function cal_pe(self)
+            te = self.prbdcell_extract('te');
+            ne = self.prbdcell_extract('ne');
             
-            inst.phy_type = 'pe';
-            inst.time = te.time;
-%             inst.data = te.data.*ne.data*1.6e-19*1e19;
-            inst.data = te.data.*ne.data*1.6;
-            inst.set_attribs(ne);
+            self.phy_type = 'pe';
+            self.time = te.time;
+%             self.data = te.data.*ne.data*1.6e-19*1e19;
+            self.data = te.data.*ne.data*1.6;
+            self.set_attribs(ne);
         end
         
-        function cal_qpar(inst)
+        function cal_qpar(self)
             gamma = 7; % gamma_i+gamma_e
-            te = inst.prbdcell_extract('te');
-            js = inst.prbdcell_extract('js');
+            te = self.prbdcell_extract('te');
+            js = self.prbdcell_extract('js');
             
-            inst.phy_type = 'qpar';
-            inst.time = te.time;
-            inst.data = gamma*js.data*1e4.*te.data*1e-6; %[MWm-2];qpar = gamma*Gamma*Te = gamma*js/e*te*e = gamma*js*te
-            inst.set_attribs(js);
+            self.phy_type = 'qpar';
+            self.time = te.time;
+            self.data = gamma*js.data*1e4.*te.data*1e-6; %[MWm-2];qpar = gamma*Gamma*Te = gamma*js/e*te*e = gamma*js*te
+            self.set_attribs(js);
         end
     end
+    
     methods
-        function inst = prbdatacal(varargin)
-            inst = inst@prbbase(varargin{:});
+        function self = prbdatacal(varargin)
+            self = self@prbbase(varargin{:});
         end
         
-        function prb_calculate(inst, derive_type, prbd_cell)
+        function prb_calculate(self, derive_type, prbd_cell)
             %% check arguments
-            derive_type = inst.check_dertype(derive_type);
-            inst.prbdcell_check(prbd_cell);
+            derive_type = self.check_dertype(derive_type);
+            self.prbdcell_check(prbd_cell);
             %% calculate derived phyical data
             switch derive_type
                 case 'js'
-                    inst.cal_js();
+                    self.cal_js();
                 case 'te'
-                    inst.cal_te();
+                    self.cal_te();
                 case 'ne'
-                    inst.cal_ne();
+                    self.cal_ne();
                 case 'pe'
-                    inst.cal_pe();
+                    self.cal_pe();
                 case 'qpar'
-                    inst.cal_qpar();
+                    self.cal_qpar();
                 otherwise
                     error('Unknown derive_type!')
             end

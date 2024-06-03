@@ -10,6 +10,7 @@ classdef prbdata < prbbase
     properties(Access=protected)
         tree_switched = 0;
     end
+    
     properties
         is;
         vp;
@@ -20,77 +21,79 @@ classdef prbdata < prbbase
         pe;
         qpar;
     end
+    
     methods(Access=protected)
-        function res = is_loaded(inst, phy_type)
-            phy_type = inst.check_phytype(phy_type);
+        function res = is_loaded(self, phy_type)
+            phy_type = self.check_phytype(phy_type);
             res = 1;
-            tmp_prbd = inst.(phy_type);
+            tmp_prbd = self.(phy_type);
             if ( isa(tmp_prbd, 'prbdataraw') || isa(tmp_prbd, 'prbdatacal') ) && ...
                     isequal(tmp_prbd.phy_type, phy_type) && ...
-                    tmp_prbd.shotno == inst.check_shotno() && ...
-                    isequal(tmp_prbd.position_tag, inst.check_postag()) && ...
-                    isequal(tmp_prbd.port_name, inst.check_portname()) && ...
+                    tmp_prbd.shotno == self.check_shotno() && ...
+                    isequal(tmp_prbd.position_tag, self.check_postag()) && ...
+                    isequal(tmp_prbd.port_name, self.check_portname()) && ...
                     ~isempty(tmp_prbd.data) && ~isempty(tmp_prbd.time)                 
                 return
             end
             res = 0;
         end
     end
+    
     methods
-        function inst = prbdata(varargin)
-            inst = inst@prbbase(varargin{:});
+        function self = prbdata(varargin)
+            self = self@prbbase(varargin{:});
         end
         
-        function load(inst, phy_type, time_range)
+        function load(self, phy_type, time_range)
             %% check arguments
             if nargin == 2
                 time_range = [];
             end
             %% check if data loaded
-            phy_type = inst.check_phytype(phy_type);
-            if inst.is_loaded(phy_type)
+            phy_type = self.check_phytype(phy_type);
+            if self.is_loaded(phy_type)
                 return
             end
             %% load raw data
             if haselement(prbbase.prb_get_const('prbtype'), phy_type)
-                inst.(phy_type) = prbdataraw(inst.check_shotno(), inst.check_postag(), inst.check_portname());
-                if inst.tree_switched
-                    inst.(phy_type).prb_switch_tree();
+                self.(phy_type) = prbdataraw(self.check_shotno(), self.check_postag(), self.check_portname());
+                if self.tree_switched
+                    self.(phy_type).prb_switch_tree();
                 end
-                inst.(phy_type).prb_read(phy_type, time_range);
+                self.(phy_type).prb_read(phy_type, time_range);
                 return
             end
             %% cal data
-            prbdc = prbdatacal(inst.check_shotno(), inst.check_postag(), inst.check_portname());
+            prbdc = prbdatacal(self.check_shotno(), self.check_postag(), self.check_portname());
             switch phy_type
                 case 'js'
-                    inst.load('is', time_range);
-                    prbdata_cell = inst.is;
+                    self.load('is', time_range);
+                    prbdata_cell = self.is;
                 case 'te'
-                    inst.load('vp', time_range);
-                    inst.load('vf', time_range);
-                    prbdata_cell = {inst.vp, inst.vf};
+                    self.load('vp', time_range);
+                    self.load('vf', time_range);
+                    prbdata_cell = {self.vp, self.vf};
                 case 'ne'
-                    inst.load('is', time_range);
-                    inst.load('te', time_range);
-                    prbdata_cell = {inst.is, inst.te};
+                    self.load('is', time_range);
+                    self.load('te', time_range);
+                    prbdata_cell = {self.is, self.te};
                 case 'pe'
-                    inst.load('ne', time_range);
-                    inst.load('te', time_range);
-                    prbdata_cell = {inst.ne, inst.te};
+                    self.load('ne', time_range);
+                    self.load('te', time_range);
+                    prbdata_cell = {self.ne, self.te};
                 case 'qpar'
-                    inst.load('js', time_range);
-                    inst.load('te', time_range);
-                    prbdata_cell = {inst.js, inst.te};
+                    self.load('js', time_range);
+                    self.load('te', time_range);
+                    prbdata_cell = {self.js, self.te};
                 otherwise
                     error('Unknown phy_type!')
             end
             prbdc.prb_calculate(phy_type, prbdata_cell);
-            inst.(phy_type) = prbdc;
+            self.(phy_type) = prbdc;
         end
         
-        function fig = plot3d(inst, phy_type, varargin)
-            if ~inst.is_loaded(phy_type)
+        function fig = plot3d(self, phy_type, varargin)
+            if ~self.is_loaded(phy_type)
                 error(['load "' phy_type '" first!'])
             end
             Args.YAxisType = 'dist2div';
@@ -104,9 +107,9 @@ classdef prbdata < prbbase
             Args.TimeRange = [];
             Args = parseArgs(varargin, Args, {'OmitNan', 'InterpNan', 'ShowXLabel', 'ShowYLabel'});
             yaxis_type = argstrchk({'channel', 'dist2div'}, Args.YAxisType);
-            prbd = inst.(phy_type);
+            prbd = self.(phy_type);
             x = prbd.time;
-            y = inst.prb_extract_distinfo(yaxis_type);
+            y = self.prb_extract_distinfo(yaxis_type);
             z = prbd.data;
             ind = findvalue(x, 0);
             x = x(ind:end);
@@ -158,8 +161,8 @@ classdef prbdata < prbbase
             set(gca, 'fontsize', Args.FontSize);
         end
         
-        function fig = plot2d(inst, phy_type, times, varargin)
-            if ~inst.is_loaded(phy_type)
+        function fig = plot2d(self, phy_type, times, varargin)
+            if ~self.is_loaded(phy_type)
                 error(['load "' phy_type '" first!'])
             end
             Args.YAxisType = 'dist2div';
@@ -169,9 +172,9 @@ classdef prbdata < prbbase
             Args.FontSize = 20;
             Args = parseArgs(varargin, Args);
             yaxis_type = argstrchk({'channel', 'dist2div'}, Args.YAxisType);
-            prbd = inst.(phy_type);
+            prbd = self.(phy_type);
             x = prbd.time;
-            y = inst.prb_extract_distinfo(yaxis_type);
+            y = self.prb_extract_distinfo(yaxis_type);
             z = prbd.data;
             dt = mean(diff(x));
             len = ceil(Args.AvgTime/dt/2);
@@ -196,8 +199,8 @@ classdef prbdata < prbbase
             legend(legend_str)
         end
         
-        function switch_tree(inst)
-            inst.tree_switched = ~inst.tree_switched;
+        function switch_tree(self)
+            self.tree_switched = ~self.tree_switched;
         end
     end
 end
