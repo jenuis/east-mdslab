@@ -6,78 +6,80 @@
 % MIT license. If not, see <https://mit-license.org>
 % -------------------------------------------------------------------------
 % XiangLiu@ASIPP 2017-9-14
-% CALIBFACTOR load calibration factor of ece system
+% ECECALIBFACTOR load calibration factor of ece system
 % Derived from mdsbase
 %   Props:
 %       shotno
 %       cf
 %       err
 %   Methods:
-%      cbobj.load 
-%      newobj = cbobj.slicebychannel(channel_list) 
-classdef (Abstract) calibfactor < mdsbase    
+%      self.load 
+%      self_new = self.slicebychannel(channel_list) 
+classdef (Abstract) ececalibfactor < mdsbase    
     properties
         cf % calibration factor
         err % clibration error
     end
+    
     properties(Access = protected)
         cffilepath
     end
     
     methods
-        function load(cbobj)
+        function load(self)
         %% load calibration factor by shotno
-        % cbobj.load
-            shot_no = cbobj.shotno;
-            cbobj.shotnocheck;
-            load(cbobj.cffilepath);
+        % self.load
+            shot_no = self.shotno;
+            self.shotnocheck;
+            cal_fac = matread(self.cffilepath, 'cal_fac');
             shot_sep_list = [cal_fac{:,1}];
             tar_ind = findvaluefloor(shot_sep_list, shot_no);
-            cbobj.cf = cal_fac{tar_ind, 2};
-            cbobj.err = cal_fac{tar_ind, 3};
+            self.cf = cal_fac{tar_ind, 2};
+            self.err = cal_fac{tar_ind, 3};
             disp(num2str(cal_fac{tar_ind, 1}, 'ECE calib factor was loaded with [%i].'))
         end
-        function newobj = slicebychannel(cbobj, channel_list)
+        
+        function self_new = slicebychannel(self, channel_list)
         %% slice cabration factor by channel_list
-        % newobj = cbobj.slicebychannel(channel_list)
-            if isempty(cbobj.cf)
-                cbobj.load
+        % self_new = self.slicebychannel(channel_list)
+            if isempty(self.cf)
+                self.load
             end
-            [~, ~, all_in_range] = inrange([1 length(cbobj.cf)], channel_list);
+            [~, ~, all_in_range] = inrange([1 length(self.cf)], channel_list);
             if ~all_in_range
                 error('Some channel is out of range!');
             end
-            newobj = cbobj.copy;
-            newobj.cf = newobj.cf(channel_list);
-            if ~isempty(newobj.err)
-                newobj.err = newobj.err(channel_list);
+            self_new = self.copy;
+            self_new.cf = self_new.cf(channel_list);
+            if ~isempty(self_new.err)
+                self_new.err = self_new.err(channel_list);
             end
         end
-        function modify(cbobj, varargin)
+        
+        function modify(self, varargin)
             Args = struct(...
                 'Delete', 0,...
                 'OnlyThisShot', 0,...
                 'Description', []);
             Args = parseArgs(varargin, Args, {'OnlyThisShot' 'Delete'});
-            load(cbobj.cffilepath);
-%             save([cbobj.cffilepath '.bak'], 'cal_fac'); % backup calibration file
+            cal_fac = matread(self.cffilepath, 'cal_fac');
             cal_fac_org = cal_fac;
             shot_sep_list = [cal_fac{:,1}];
-            shot_ind = find(shot_sep_list == cbobj.shotno);
+            shot_ind = find(shot_sep_list == self.shotno);
             if isempty(shot_ind) % add calibration factor
-                cal_fac{end+1, 1} = cbobj.shotno;
-                cal_fac{end, 2} = cbobj.cf;
-                cal_fac{end, 3} = cbobj.err;
+                cal_fac{end+1, 1} = self.shotno;
+                cal_fac{end, 2} = self.cf;
+                cal_fac{end, 3} = self.err;
                 if ~isempty(Args.Description)
                     cal_fac{end, 4} = Args.Description;
                 end
                 if Args.OnlyThisShot
-                    curr_shot_ind = findvaluefloor(shot_sep_list, cbobj.shotno);
+                    curr_shot_ind = findvaluefloor(shot_sep_list, self.shotno);
                     if isempty(curr_shot_ind)
                         curr_shot_ind = 1;
                     end
                     cal_fac(end+1, :) = cal_fac_org(curr_shot_ind, :);
-                    cal_fac{end, 1} = cbobj.shotno + 1;
+                    cal_fac{end, 1} = self.shotno + 1;
                     cal_fac{end, 4} = cal_fac_org{curr_shot_ind, 1};
                 end
                 shot_sep_list = [cal_fac{:,1}];
@@ -87,14 +89,14 @@ classdef (Abstract) calibfactor < mdsbase
                 if Args.Delete % delete this calibration factor
                     cal_fac(shot_ind, :) = [];
                 else % update this calibration factor
-                    cal_fac{shot_ind, 2} = cbobj.cf;
-                    cal_fac{shot_ind, 3} = cbobj.err;
+                    cal_fac{shot_ind, 2} = self.cf;
+                    cal_fac{shot_ind, 3} = self.err;
                     if ~isempty(Args.Description)
                         cal_fac{shot_ind, 4} = Args.Description;
                 end
                 end
             end
-            save(cbobj.cffilepath, 'cal_fac');
+            save(self.cffilepath, 'cal_fac');
         end
     end
     

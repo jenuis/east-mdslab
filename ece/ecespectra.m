@@ -41,8 +41,8 @@ classdef ecespectra < radte
         
         function loadbymds(self, time_range)
         %% read spectra data from mds server
-        % pobj.loadbymds
-        % pobj.loadbymds(time_range)
+        % self.loadbymds
+        % self.loadbymds(time_range)
         
             % check arguments in
             if nargin == 1

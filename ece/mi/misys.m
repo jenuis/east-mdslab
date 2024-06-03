@@ -1,4 +1,4 @@
-%% Subclass of freqinfo for mi of ece
+%% Subclass of ecefreqinfo for mi of ece
 % -------------------------------------------------------------------------
 % Copyright 2019 Xiang Liu
 % Contact: Xiang Liu, xliu.fusion@outlook.com
@@ -7,22 +7,22 @@
 % -------------------------------------------------------------------------
 % Xiang Liu@ASIPP 2017-9-14
 % MISYS hold informations of mi system
-% Derived from freqinfo
+% Derived from ecefreqinfo
 %   Props:
 %       shotno
 %       channelno
 %       freqlist
 %       bandwidth
 %   Methods
-%       msobj.loadsyspara
-%       freq = msobj.getfreq(channel_list)
-classdef misys < freqinfo
+%       self.loadsyspara
+%       freq = self.getfreq(channel_list)
+classdef misys < ecefreqinfo
     methods
-        function msobj = misys(shotno)
-            msobj.parafilepath = 'mipara.mat';
+        function self = misys(shotno)
+            self.parafilepath = 'mipara.mat';
             if nargin > 0
-                msobj.shotno = shotno;
-                msobj.loadsyspara;
+                self.shotno = shotno;
+                self.loadsyspara;
             end
         end
     end

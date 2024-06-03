@@ -9,15 +9,15 @@
 % MIRAW reads MI reference and interferogram and do fft get raw data
 % Derived from signal
 %   Instance:
-%       mrobj = miraw
-%       mrobj = miraw(shotno, 'TimeRange', time_range,...
+%       self = miraw
+%       self = miraw(shotno, 'TimeRange', time_range,...
 %                     'ChannelList', channel_list)
 %   Props:
 %       refer
 %       interfer
 %       channellist
 %   Methods:
-%       mrobj.mireadmds('TimeRange', time_range,...
+%       self.mireadmds('TimeRange', time_range,...
 %                       'ChannelList', channel_list)    
 classdef miraw < signal
     properties
@@ -25,56 +25,57 @@ classdef miraw < signal
         interfer
         channellist
     end
+    
     properties(Constant, Access = protected)
         TreeName = 'mpi_east';
         ReferNode = 'MPI_refer';
         InterferNode = 'MPI_interfer';
     end
+    
     methods(Access = protected)
-        function calinterfer(mrobj)
-            [mrobj.data, ~ ,mrobj.time] = micalinterfer(...
-                mrobj.refer.data, mrobj.interfer.data);
-            if ~isempty(mrobj.channellist)
-                mrobj.data = mrobj.data(mrobj.channellist, :);
+        function calinterfer(self)
+            [self.data, ~ ,self.time] = micalinterfer(...
+                self.refer.data, self.interfer.data);
+            if ~isempty(self.channellist)
+                self.data = self.data(self.channellist, :);
             end
         end
     end
+    
     methods
-        function mrobj = miraw(shotno, varargin)
+        function self = miraw(shotno, varargin)
             if nargin > 0
-                mrobj.shotno = shotno;
-                mrobj.mireadmds(varargin);
+                self.shotno = shotno;
+                self.mireadmds(varargin);
             end
         end
-        function mireadmds(mrobj, varargin)
+        
+        function mireadmds(self, varargin)
         %% read mi raw data from mds server
-        % mrobj.mireadmds
-        % mrobj.mireadmds('TimeRange', time_range,...
+        % self.mireadmds
+        % self.mireadmds('TimeRange', time_range,...
         %                 'ChannelList', channel_list)
             if length(varargin) == 1 && iscell(varargin{1})
                 varargin = varargin{:};
             end
-            mi_para = misys(mrobj.shotno); 
+            mi_para = misys(self.shotno); 
             Args = struct(...
                 'ChannelList', [],...
                 'TimeRange',[]);
             Args = parseArgs(varargin, Args);
-            if isempty(mrobj.channellist)
+            if isempty(self.channellist)
                 if ~isempty(Args.ChannelList)
-                    mrobj.channellist = Args.ChannelList;
+                    self.channellist = Args.ChannelList;
                 elseif ~isempty(mi_para.channelno)
-                    mrobj.channellist = mi_para.channelno;
+                    self.channellist = mi_para.channelno;
                 end
             end
-            mrobj.refer = signal(mrobj.shotno, mrobj.TreeName,...
-                mrobj.ReferNode, 'tr', Args.TimeRange, 'rn');
-            mrobj.interfer = signal(mrobj.shotno, mrobj.TreeName,...
-                mrobj.InterferNode, 'tr', Args.TimeRange, 'rn');
-            mrobj.calinterfer;
-        end
-        function mireadlocal(mrobj)
+            self.refer = signal(self.shotno, self.TreeName,...
+                self.ReferNode, 'tr', Args.TimeRange, 'rn');
+            self.interfer = signal(self.shotno, self.TreeName,...
+                self.InterferNode, 'tr', Args.TimeRange, 'rn');
+            self.calinterfer;
         end
     end
-    
 end
 

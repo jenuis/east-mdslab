@@ -9,17 +9,17 @@
 % SPEC2PROF hold functions for mapping freqency to major radius
 % Derived from mdsbase
 %   Instance:
-%       spobj = spec2prof
+%       self = spec2prof
 %   Props:
 %       it
 %       rmax
 %       rmin
 %       timeslice
 %   Methods:
-%       spobj.setpara(shot_para, time_slice)
-%       radius = spobj.freq2radius(freq, n)
-%       [radius_new, valid_ind] = spobj.validradius(radius)
-%       [radius, valid_ind] = spobj.map2radius(freq)
+%       self.setpara(shot_para, time_slice)
+%       radius = self.freq2radius(freq, n)
+%       [radius_new, valid_ind] = self.validradius(radius)
+%       [radius, valid_ind] = self.map2radius(freq)
 classdef spec2prof < mdsbase    
     properties
         it
@@ -27,70 +27,75 @@ classdef spec2prof < mdsbase
         rmin
         timeslice
     end
+    
     properties(Constant, Access = protected)
         MajorRadius = 1.85; % [m]
         MinorRadius = 0.45; % [m]
     end
+    
     methods(Access = protected)
-        function paracheck(spobj)
-            if isempty(spobj.it) ||...
-                    isempty(spobj.rmax) ||...
-                    isempty(spobj.rmin) ||...
-                    isempty(spobj.timeslice)
+        function paracheck(self)
+            if isempty(self.it) ||...
+                    isempty(self.rmax) ||...
+                    isempty(self.rmin) ||...
+                    isempty(self.timeslice)
                 error('key attributes not been properly set!')
             end 
         end
     end
+    
     methods
-        function spobj = spec2prof(shot_para, time_slice)
+        function self = spec2prof(shot_para, time_slice)
             if nargin > 0
-                spobj.setpara(shot_para, time_slice);
+                self.setpara(shot_para, time_slice);
             end
         end
-        function setpara(spobj, shot_para, time_slice)
+        
+        function setpara(self, shot_para, time_slice)
         %% set key parameters for mapping
-        % spobj.setpara(shot_para, time_slice)
+        % self.setpara(shot_para, time_slice)
             if isempty(shot_para.rbdry) || ~isa(shot_para.rbdry, 'signal')...
                     || isempty(shot_para.rbdry.data)
-                if isempty(spobj.rmax) || isempty(spobj.rmin)
+                if isempty(self.rmax) || isempty(self.rmin)
                     warning('Set parameters error using efit, Not using default value instead!');
-                    spobj.rmax = spobj.MajorRadius + spobj.MinorRadius;
-                    spobj.rmin = spobj.MajorRadius - spobj.MinorRadius;
+                    self.rmax = self.MajorRadius + self.MinorRadius;
+                    self.rmin = self.MajorRadius - self.MinorRadius;
                 end
                 return
             end
             rbdry = shot_para.rbdry.sigslice(time_slice);
-            spobj.rmin = rbdry.sigunbund('rbdrymin');
-            spobj.rmax = rbdry.sigunbund('rbdrymax');
+            self.rmin = rbdry.sigunbund('rbdrymin');
+            self.rmax = rbdry.sigunbund('rbdrymax');
             if isempty(shot_para.it)
                 error('shot_para.it is empty!')
             end
-            spobj.it = shot_para.it.mean;
-            spobj.timeslice = time_slice;
+            self.it = shot_para.it.mean;
+            self.timeslice = time_slice;
         end
-        function radius = freq2radius(spobj, freq, n)
+        
+        function radius = freq2radius(self, freq, n)
             if nargin == 2
                 n = 2;
             end
-            if isempty(spobj.it)
+            if isempty(self.it)
                 error('"it" is empty!')
             end
-            radius = 4.16e-4*abs(spobj.it)*28*n./freq;
+            radius = 4.16e-4*abs(self.it)*28*n./freq;
         end
-        function [radius_new, valid_ind] = validradius(spobj, radius)
+        
+        function [radius_new, valid_ind] = validradius(self, radius)
         %% limit channels located inside LCFS and no harmonics overlap
-        % [radius_new, valid_ind] = spobj.validradius(radius)
+        % [radius_new, valid_ind] = self.validradius(radius)
             [radius_new, valid_ind] = inrange(...
-                [max(spobj.rmin, 2/3*spobj.rmax) spobj.rmax], radius);
+                [max(self.rmin, 2/3*self.rmax) self.rmax], radius);
         end
-        function [radius, valid_ind] = map2radius(spobj, freq)
+        
+        function [radius, valid_ind] = map2radius(self, freq)
         %% mapping freqency to radius
-        % [radius, valid_ind] = spobj.map2radius(freq)
-            spobj.paracheck;
-            radius = spobj.freq2radius(freq);
-            [radius, valid_ind] = spobj.validradius(radius);
+        % [radius, valid_ind] = self.map2radius(freq)
+            self.paracheck;
+            radius = self.freq2radius(freq);
+            [radius, valid_ind] = self.validradius(radius);
         end
     end
-    
 end
-

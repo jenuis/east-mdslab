@@ -1,4 +1,4 @@
-%% Subclass of freqinfo for hrs of ece
+%% Subclass of ecefreqinfo for hrs of ece
 % -------------------------------------------------------------------------
 % Copyright 2019 Xiang Liu
 % Contact: Xiang Liu, xliu.fusion@outlook.com
@@ -7,22 +7,22 @@
 % -------------------------------------------------------------------------
 % Xiang Liu@ASIPP 2017-9-14
 % HRSSYS hold informations of hrs system
-% Derived from freqinfo
+% Derived from ecefreqinfo
 %   Props:
 %       shotno
 %       channelno
 %       freqlist
 %       bandwidth
 %   Methods
-%       hsobj.loadsyspara
-%       freq = hsobj.getfreq(channel_list)
-classdef hrssys < freqinfo
+%       self.loadsyspara
+%       freq = self.getfreq(channel_list)
+classdef hrssys < ecefreqinfo
     methods
-        function hsobj = hrssys(shotno)
-            hsobj.parafilepath = 'hrspara.mat';
+        function self = hrssys(shotno)
+            self.parafilepath = 'hrspara.mat';
             if nargin > 0
-                hsobj.shotno = shotno;
-                hsobj.loadsyspara;
+                self.shotno = shotno;
+                self.loadsyspara;
             end
         end
     end

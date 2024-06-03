@@ -153,7 +153,7 @@ classdef eceprofile < radte
         radius_inds = radius_inds & cf_inds;
         self.radius = self.radius(radius_inds);
         valid_ind = valid_ind(radius_inds);
-        self.z = antenna.calz(self.radius);
+        self.z = eceantenna.calz(self.radius);
         channel_list = sys_para.channelno(valid_ind);
         % collect raw data and calibration factor
         switch self.ecetype
@@ -166,7 +166,7 @@ classdef eceprofile < radte
                 error('Unrecognized ece_type!')
         end
         % calculate spectra
-        spec = spectra(self.shotno, self.ecetype);
+        spec = ecespectra(self.shotno, self.ecetype);
         spec.calspec(raw_sig, calib_fac);
         % set time, te and err
         self.time = spec.time;
@@ -176,7 +176,7 @@ classdef eceprofile < radte
         end
         
         function calprof(self, spec, shot_para)
-        %% calculate profile by spectra and shotpara
+        %% calculate profile by ecespectra and shotpara
         % self.calprof(spec, shot_para)
             if spec.shotno ~= shot_para.shotno
                 error('shotno of arguments mismatch!');
@@ -188,7 +188,7 @@ classdef eceprofile < radte
             % set radius and get valid channels
             s2p = spec2prof(shot_para, mean(self.time));
             [self.radius, valid_ind] = s2p.map2radius(spec.freq);
-            self.z = antenna.calz(self.radius);
+            self.z = eceantenna.calz(self.radius);
             % set te and err
             self.te = spec.te(valid_ind, :);
             if ~isempty(spec.err)
