@@ -1,14 +1,14 @@
 %% Class to read shot parameters for mdslib 
 % -------------------------------------------------------------------------
-% Copyright 2019 Xiang Liu
+% Copyright 2019-2024 Xiang Liu
 % Contact: Xiang Liu, xliu.fusion@outlook.com
 % This file is part of EAST-MDSLAB. You should have recieved a copy of the
 % MIT license. If not, see <https://mit-license.org>
 % -------------------------------------------------------------------------
 % Xiang Liu@ASIPP 2017-9-12
 %   Instance:
-%       spobj = shotpara
-%       spobj = shotpara(shotno)
+%       self = shotpara
+%       self = shotpara(shotno)
 %   Props:
 %       shotno
 %       pulseflat
@@ -22,16 +22,17 @@
 %       mfpsinorm
 %       rbdry
 %   Methods:
-%       spobj.read(time_range)
-%       spobj.readpulse
-%       spobj.readit
-%       spobj.readmftime
-%       spobj.readmaxis(time_range)
-%       spobj.readmflux(time_range)
-%       spobj.readrbdry(time_range)
-%       spobj.calnormpsi(r, z, time_range)
-%       spobj.calbt
-%       spobj.viewmflux(time_slice)
+%       self.read(time_range)
+%       self.readpulse
+%       self.readit
+%       self.readmftime
+%       self.readmaxis(time_range)
+%       self.readmflux(time_range)
+%       self.readmfbdryrz
+%       self.calrbdry(time_range)
+%       self.calnormpsi(r, z, time_range)
+%       self.calbt
+%       self.viewmflux(time_slice)
 classdef shotpara < mdsbase
     properties
     %% public properties
@@ -49,10 +50,12 @@ classdef shotpara < mdsbase
         mfbdryrz
         limiterrz
     end
+    
     properties(Access = protected)
     %% protected properties 
         efit_status = nan;
     end
+    
     properties(Constant, Access = protected)
     %% protected constant properties
         ItRange = [10500 3500]; % center and error
@@ -80,9 +83,10 @@ classdef shotpara < mdsbase
             'pcs_east', 'sysdrit';...
             };
     end
+    
     methods(Access = protected)
     %% private methods
-        function extract_it(spobj, sig_it, only_tail)
+        function extract_it(self, sig_it, only_tail)
             if nargin == 2
                 only_tail = 0;
             end
@@ -92,48 +96,59 @@ classdef shotpara < mdsbase
                 tmp = sig_it.data;
             end
             tmp_mean = mean(tmp);
-            if abs(abs(tmp_mean)-spobj.ItRange(1)) > spobj.ItRange(2)
+            if abs(abs(tmp_mean)-self.ItRange(1)) > self.ItRange(2)
                 return
             end
-            spobj.it.mean = tmp_mean;
-            spobj.it.nodename = sig_it.nodename;
+            self.it.mean = tmp_mean;
+            self.it.nodename = sig_it.nodename;
         end
-        function normalizepsi(spobj)
-            spobj.mfpsinorm = spobj.mfpsirz.copy;
-            psi_rz = spobj.mfpsirz.data;
-            ssi_psi = spobj.mfssi;
-            maxis_psi = ssi_psi.sigunbund(spobj.SsiMagNode);
-            bdry_psi = ssi_psi.sigunbund(spobj.SsiBryNode);
+        
+        function normalizepsi(self)
+            if ~isempty(self.mfpsinorm)
+                return
+            end
+            self.mfpsinorm = self.mfpsirz.copy;
+            psi_rz = self.mfpsirz.data;
+            ssi_psi = self.mfssi;
+            maxis_psi = ssi_psi.sigunbund(self.SsiMagNode);
+            bdry_psi = ssi_psi.sigunbund(self.SsiBryNode);
             for i=1:length(maxis_psi)
-                spobj.mfpsinorm.data(:,:,i) = (psi_rz(:,:,i) - maxis_psi(i))/(bdry_psi(i) - maxis_psi(i));
+                self.mfpsinorm.data(:,:,i) = (psi_rz(:,:,i) - maxis_psi(i))/(bdry_psi(i) - maxis_psi(i));
             end
         end
-        function mfdatacheck(spobj)
-            if isempty(spobj.mfpsinorm) || isempty(spobj.mfgridrz)
+        
+        function mfdatacheck(self)
+            if isempty(self.mfpsinorm) || isempty(self.mfgridrz)
                 error('Run readmflux first!');
             end
         end
-        function time_range = mftimerngcheck(spobj, time_range, allow_single_value)
+        
+        function time_range = mftimerngcheck(self, time_range, allow_single_value)
             if nargin == 2
                 allow_single_value = 0;
             end
-            if isempty(spobj.mftime)
-                spobj.readmftime;
+            if isempty(self.mftime)
+                self.readmftime;
             end
             if isempty(time_range)
-                time_range = spobj.mftime([1 end]);
+                time_range = self.mftime([1 end]);
             % ensure psirz has the third dim
             elseif length(time_range) == 1 && ~allow_single_value
                 time_range = time_range + [0 0.1];
             end
         end
-        function check_efit_status(spobj)
+        
+        function check_efit_status(self)
             m = mds;
-            [~, spobj.efit_status] = m.mdsread(spobj.shotno, spobj.EfitTree, ['\' spobj.EfitTimeNode '[0]']);
+            [~, self.efit_status] = m.mdsread(self.shotno, self.EfitTree, ['\' self.EfitTimeNode '[0]']);
         end
     end
+    
     methods(Static)
         function bp = calbp(ip, a, kappa)
+            %% calulate B_p for lambda scaling
+            % bp = calbp(ip, a, kappa)
+            
             %% change unit to SI
             if min(ip) < 20
                 ip = ip*1e6;
@@ -152,61 +167,64 @@ classdef shotpara < mdsbase
             bp = mu0*ip./L;
         end
     end
+    
     methods
-        function spobj = shotpara(shotno)
+        function self = shotpara(shotno)
         %% create an instance of shotpara
+        % self = shotpara()
+        % self = shotpara(shotno)
             if nargin > 0
-                spobj.shotno = shotno;
+                self.shotno = shotno;
             end
         end
         
-        function read(spobj, time_range)
+        function read(self, time_range)
         %% read all properties
-        % spobj.read
-        % spobj.read(time_range)
+        % self.read
+        % self.read(time_range)
             if nargin == 1
                 time_range = [];
             end
-            spobj.readpulse;
-            spobj.readit;
-            spobj.check_efit_status;
-            if ~spobj.efit_status
+            self.readpulse;
+            self.readit;
+            self.check_efit_status;
+            if ~self.efit_status
                 return
             end
-            spobj.readmftime;
-            spobj.readmaxis(time_range);
-            spobj.readmflux(time_range);
-            spobj.readrbdry(time_range);
+            self.readmftime;
+            self.readmaxis(time_range);
+            self.readmflux(time_range);
+            self.readlimiter();
         end
         
-        function readpulse(spobj)
+        function readpulse(self)
         %% get shot pulse range of flattop
-        % spobj.readpulse
-            if ~isempty(spobj.pulseflat)
+        % self.readpulse
+            if ~isempty(self.pulseflat)
                 return
             end
-            ip = signal(spobj.shotno, spobj.PcsTree, spobj.IpNode);
+            ip = signal(self.shotno, self.PcsTree, self.IpNode);
             ip.sigread;
             flat_range = flattop(ip.data);
-            spobj.pulseflat = ip.time(flat_range);
+            self.pulseflat = ip.time(flat_range);
         end
         
-        function readit(spobj)
+        function readit(self)
         %% read It
-        % spobj.readit
-            if ~isempty(spobj.it)
+        % self.readit
+            if ~isempty(self.it)
                 return
             end
-            sig_it = signal(spobj.shotno);
-            for i=1:length(spobj.ItInfo)
-                tree_name = spobj.ItInfo{i, 1};
-                node_name = spobj.ItInfo{i, 2};
+            sig_it = signal(self.shotno);
+            for i=1:length(self.ItInfo)
+                tree_name = self.ItInfo{i, 1};
+                node_name = self.ItInfo{i, 2};
                 sig_it.treename = tree_name;
                 sig_it.nodename = node_name;
                 try
                     sig_it.sigreaddata;
-                    spobj.extract_it(sig_it);
-                    if ~isempty(spobj.it)
+                    self.extract_it(sig_it);
+                    if ~isempty(self.it)
                         break
                     end
                 catch
@@ -215,138 +233,157 @@ classdef shotpara < mdsbase
             end           
         end
         
-        function readmftime(spobj)
+        function readmftime(self)
         %% read efit time
-        % spobj.readmftime
-            if ~isempty(spobj.mftime)
+        % self.readmftime
+            if ~isempty(self.mftime)
                 return
             end
-            if isnan(spobj.efit_status)
-                spobj.check_efit_status;
+            if isnan(self.efit_status)
+                self.check_efit_status;
             end
-            if ~spobj.efit_status
+            if ~self.efit_status
                 return
             end
-            sig = signal(spobj.shotno, spobj.EfitTree, spobj.EfitTimeNode);
+            sig = signal(self.shotno, self.EfitTree, self.EfitTimeNode);
             sig.sigreaddata;
-            spobj.mftime = sig.data;
+            self.mftime = sig.data;
         end
         
-        function readmaxis(spobj, time_range)
+        function readmaxis(self, time_range)
         %% read location of magnetic axis
-        % spobj.readmaxis
-        % spobj.readmaxis(time_range)
+        % self.readmaxis
+        % self.readmaxis(time_range)
+            if ~isempty(self.maxisloc)
+                return
+            end
             if nargin == 1
                 time_range = [];
             end
-            if isnan(spobj.efit_status)
-                spobj.check_efit_status;
+            if isnan(self.efit_status)
+                self.check_efit_status;
             end
-            if ~spobj.efit_status
+            if ~self.efit_status
                 return
             end
-            time_range = spobj.mftimerngcheck(time_range);
-            spobj.maxisloc = signal(spobj.shotno, spobj.EfitTree, {spobj.RMaxisNode, spobj.ZMaxisNode}, 'rn', 'tr', time_range);
+            time_range = self.mftimerngcheck(time_range);
+            self.maxisloc = signal(self.shotno, self.EfitTree, {self.RMaxisNode, self.ZMaxisNode}, 'rn', 'tr', time_range);
         end
         
-        function readmflux(spobj, time_range)
+        function readmflux(self, time_range)
         %% read magnetic flux information from efit
-        % spobj.readmflux
-        % spobj.readmflux(time_range)
+        % self.readmflux
+        % self.readmflux(time_range)
             if nargin == 1
                 time_range = [];
             end
-            if isnan(spobj.efit_status)
-                spobj.check_efit_status;
+            if isnan(self.efit_status)
+                self.check_efit_status;
             end
-            if ~spobj.efit_status
+            if ~self.efit_status
                 return
             end
-            time_range = spobj.mftimerngcheck(time_range);
-            spobj.mfpsirz = signal(spobj.shotno, spobj.EfitTree, spobj.PsiRZNode, 'tr', time_range, 'rn');
-            spobj.mfgridrz = signal(spobj.shotno, spobj.EfitTree, {spobj.GridRNode, spobj.GridZNode}, 'rn');
-            spobj.mfgridrz.time = [];
-            spobj.mfssi = signal(spobj.shotno, spobj.EfitTree, {spobj.SsiMagNode, spobj.SsiBryNode}, 'tr', time_range, 'rn');
-            spobj.normalizepsi;
+            time_range = self.mftimerngcheck(time_range);
+            if isempty(self.mfpsirz)
+                self.mfpsirz = signal(self.shotno, self.EfitTree, self.PsiRZNode, 'tr', time_range, 'rn');
+            end
+            if isempty(self.mfgridrz)
+                self.mfgridrz = signal(self.shotno, self.EfitTree, {self.GridRNode, self.GridZNode}, 'rn');
+                self.mfgridrz.time = [];
+            end
+            if isempty(self.mfssi)
+                self.mfssi = signal(self.shotno, self.EfitTree, {self.SsiMagNode, self.SsiBryNode}, 'tr', time_range, 'rn');
+            end
+            self.normalizepsi;
         end
         
-        function readrbdry(spobj, time_range)
+        function calrbdry(self, time_range)
         %% read min and max of major radius at LCFS
-        % spobj.readrbdry
-        % spobj.readrbdry(time_range)
-            spobj.mfdatacheck;
-            if isempty(spobj.maxisloc)
+        % self.calrbdry
+        % self.calrbdry(time_range)
+            self.mfdatacheck;
+            if isempty(self.maxisloc)
                 error('Run readmaxis first!')
             end
             if nargin == 1
                 time_range = [];
             end
-            if isnan(spobj.efit_status)
-                spobj.check_efit_status;
+            if isnan(self.efit_status)
+                self.check_efit_status;
             end
-            if ~spobj.efit_status
+            if ~self.efit_status
                 return
             end
-            time_range = spobj.mftimerngcheck(time_range);
-            psirz_norm = spobj.mfpsinorm.sigslice(time_range);
-            grid_r = spobj.mfgridrz.sigunbund(spobj.GridRNode);
-            grid_z = spobj.mfgridrz.sigunbund(spobj.GridZNode);
-            maxis_loc = spobj.maxisloc.sigpartdata(time_range);
+            time_range = self.mftimerngcheck(time_range);
+            psirz_norm = self.mfpsinorm.sigslice(time_range);
+            grid_r = self.mfgridrz.sigunbund(self.GridRNode);
+            grid_z = self.mfgridrz.sigunbund(self.GridZNode);
+            maxis_loc = self.maxisloc.sigpartdata(time_range);
             r_maxis = maxis_loc(1,:);
             z_maxis = maxis_loc(2,:);
-            spobj.rbdry = signal(spobj.shotno, '', {spobj.RBdryMin, spobj.RBdryMax});
-            spobj.rbdry.time = psirz_norm.time;
-            for i = 1:length(spobj.rbdry.time)
+            self.rbdry = signal(self.shotno, '', {self.RBdryMin, self.RBdryMax});
+            self.rbdry.time = psirz_norm.time;
+            for i = 1:length(self.rbdry.time)
                 zmaxis_ind = findvalue(grid_z, z_maxis(i));
                 rmaxis_ind = findvalue(grid_r, r_maxis(i));
                 psirz_norm_mid = psirz_norm.data(:, zmaxis_ind, i);
                 tmp = interp1(psirz_norm_mid(1:rmaxis_ind), grid_r(1:rmaxis_ind), 1, 'pchip');
                 tmp(2) = interp1(psirz_norm_mid(rmaxis_ind:end), grid_r(rmaxis_ind:end), 1, 'pchip');
-                spobj.rbdry.data(:, i) = sort(tmp);
+                self.rbdry.data(:, i) = sort(tmp);
             end
         end
         
-        function readmfbdryrz(spobj, time_range)
+        function readmfbdryrz(self, time_range)
         %% read the RZ location of LCFS
-        % spobj.readrbdry
-        % spobj.readrbdry(time_range)
+        % self.readmfbdryrz
+        % self.readmfbdryrz(time_range)
+            if ~isempty(self.mfbdryrz)
+                return
+            end
             if nargin == 1
                 time_range = [];
             end
-            if isnan(spobj.efit_status)
-                spobj.check_efit_status;
+            if isnan(self.efit_status)
+                self.check_efit_status;
             end
-            if ~spobj.efit_status
+            if ~self.efit_status
                 return
             end
-            time_range = spobj.mftimerngcheck(time_range);
-            spobj.mfbdryrz = signal(spobj.shotno, spobj.EfitTree, spobj.BdryRZNode, 'rn', 'tr', time_range);
+            time_range = self.mftimerngcheck(time_range);
+            self.mfbdryrz = signal(self.shotno, self.EfitTree, self.BdryRZNode, 'rn', 'tr', time_range);
         end
         
-        function readlimiter(spobj)
-            s = signal(spobj.shotno, spobj.EfitTree, spobj.LimiterNode, 'rn');
-            spobj.limiterrz = s.data;
+        function readlimiter(self)
+            %% read Limiter (R,Z) positions
+            % self.readlimiter()
+            if ~isempty(self.limiterrz)
+                return
+            end
+            
+            s = signal(self.shotno, self.EfitTree, self.LimiterNode);
+            s.sigreaddata();
+            self.limiterrz = s.data;
         end
         
-        function norm_psi = calnormpsi(spobj, r, z, time_range)
+        function norm_psi = calnormpsi(self, r, z, time_range)
         %% calculate normlized psi by (r,z) location
-        % orm_psi = spobj.calnormpsi(r, z)
-        % orm_psi = spobj.calnormpsi(r, z, time_range)
-            spobj.mfdatacheck;
+        % orm_psi = self.calnormpsi(r, z)
+        % orm_psi = self.calnormpsi(r, z, time_range)
+            self.mfdatacheck;
             if nargin == 3
                 time_range = [];
             end
-            time_range = spobj.mftimerngcheck(time_range, 1);
+            time_range = self.mftimerngcheck(time_range, 1);
             if size(r,1) ~= 1
                 r = r';
             end
             if size(z,1) ~= 1
                 z = z';
             end
-            psirz_norm = spobj.mfpsinorm.sigslice(time_range);
-            grid_r = spobj.mfgridrz.sigunbund(spobj.GridRNode);
-            grid_z = spobj.mfgridrz.sigunbund(spobj.GridZNode);
-            norm_psi = signal(spobj.shotno);
+            psirz_norm = self.mfpsinorm.sigslice(time_range);
+            grid_r = self.mfgridrz.sigunbund(self.GridRNode);
+            grid_z = self.mfgridrz.sigunbund(self.GridZNode);
+            norm_psi = signal(self.shotno);
             norm_psi.time = psirz_norm.time;
             norm_psi.data = [];
             for i = 1:length(norm_psi.time)
@@ -354,48 +391,48 @@ classdef shotpara < mdsbase
             end
         end
         
-        function calbt(spobj, time_range)
-            if isempty(spobj.it)
+        function calbt(self, time_range)
+            if isempty(self.it)
                 error('Run readit firtst!')
             end
-            if isa(spobj.maxisloc, 'signal')
+            if isa(self.maxisloc, 'signal')
                 if nargin == 1
-                    time_range = spobj.maxisloc.time([1 end]);
+                    time_range = self.maxisloc.time([1 end]);
                 end
-                rmaxis_slice = spobj.maxisloc.sigslice(time_range);
-                rmaxis_mean = mean(rmaxis_slice.sigunbund(spobj.RMaxisNode));
+                rmaxis_slice = self.maxisloc.sigslice(time_range);
+                rmaxis_mean = mean(rmaxis_slice.sigunbund(self.RMaxisNode));
             else
-                rmaxis_mean = spobj.DefaultRmajor;
+                rmaxis_mean = self.DefaultRmajor;
             end
-            spobj.bt = 4.16e-4*spobj.it.mean/rmaxis_mean;
+            self.bt = 4.16e-4*self.it.mean/rmaxis_mean;
         end
         
-        function viewmflux(spobj, time_slice, rm_region)
+        function viewmflux(self, time_slice, rm_region)
         %% plot magnetic surface at given time
-        % spobj.viewmflux(time_slice)
+        % self.viewmflux(time_slice)
             if nargin == 2
                 rm_region = [];
             end
-            spobj.mfdatacheck;
-            x = spobj.mfgridrz.sigunbund(spobj.GridRNode);
-            y = spobj.mfgridrz.sigunbund(spobj.GridZNode);
-            z = spobj.mfpsinorm.sigpartdata(time_slice);
+            self.mfdatacheck;
+            x = self.mfgridrz.sigunbund(self.GridRNode);
+            y = self.mfgridrz.sigunbund(self.GridZNode);
+            z = self.mfpsinorm.sigpartdata(time_slice);
             z(z>1.05) = 1.2;
             if ~isempty(rm_region)
                 ind_x = x >= rm_region(1) & x <= rm_region(2);
                 ind_y = y >= rm_region(3) & y <= rm_region(4);
                 z(ind_x, ind_y) = nan;
             end
-            time_ind = findtime(spobj.mfpsinorm.time, time_slice);
-            time_slice = spobj.mfpsinorm.time(time_ind);
+            time_ind = findtime(self.mfpsinorm.time, time_slice);
+            time_slice = self.mfpsinorm.time(time_ind);
             
             contour(x, y, z')
             hold on
             
-            if isempty(spobj.limiterrz)
-                spobj.readlimiter;
+            if isempty(self.limiterrz)
+                self.readlimiter;
             end
-            plot(spobj.limiterrz(1,:), spobj.limiterrz(2,:), 'k-', 'linewidth', 3);
+            plot(self.limiterrz(1,:), self.limiterrz(2,:), 'k-', 'linewidth', 3);
             
             [ind1, ind2]=find(z==min(min(z)));
             plot(x(ind1),y(ind2),'k+');
@@ -403,23 +440,23 @@ classdef shotpara < mdsbase
             
             axis equal
             caxis([0 1.05])
-            title(['#' num2str(spobj.shotno) '@' num2str(time_slice,'%4.3f') 's'])
+            title(['#' num2str(self.shotno) '@' num2str(time_slice,'%4.3f') 's'])
             xlabel('R [m]')
             ylabel('Z [m]')
             colorbar('EastOutside')
         end
         
-        function modefittree(spobj, new_tree)
-            spobj.EfitTree = new_tree;
+        function modefittree(self, new_tree)
+            self.EfitTree = new_tree;
         end
         
-        function res = caldivleg(spobj, pos_tag, time_slice, disp)
+        function res = caldivleg(self, pos_tag, time_slice, disp)
             %% check arguments
             if nargin == 3
                 disp = 0;
             end
             %% get Div-LP position
-            pb = prbbase(spobj.shotno, pos_tag);
+            pb = prbbase(self.shotno, pos_tag);
             port_names = pb.prb_list_portnames;
             assert(~isempty(port_names), 'Empty port name for Div-LP!')
             pb.prb_set_portname(port_names{1});
@@ -435,26 +472,26 @@ classdef shotpara < mdsbase
                 target_z(end+1) = 1.162;
             end
             %% check equilibrium data
-            if isempty(spobj.mfpsirz) || isempty(inrange(spobj.mftime([1 end]), time_slice))
-                spobj.readmflux;
+            if isempty(self.mfpsirz) || isempty(inrange(self.mftime([1 end]), time_slice))
+                self.readmflux;
             end
             
-            if isempty(spobj.mfbdryrz) || isempty(inrange(spobj.mfbdryrz.time([1 end]), time_slice))
-                spobj.readmfbdryrz;
+            if isempty(self.mfbdryrz) || isempty(inrange(self.mfbdryrz.time([1 end]), time_slice))
+                self.readmfbdryrz;
             end
             
             if disp
-                spobj.viewmflux(time_slice)
+                self.viewmflux(time_slice)
                 hold on
                 plot(target_r, target_z, 'r--')
             end
             %% slice equilibrium data
-            psi_rz = spobj.mfpsinorm.sigpartdata(time_slice);
-            bdry_slice = spobj.mfbdryrz.sigpartdata(time_slice);
+            psi_rz = self.mfpsinorm.sigpartdata(time_slice);
+            bdry_slice = self.mfbdryrz.sigpartdata(time_slice);
             bdry_r = bdry_slice(1, :)';
             bdry_z = bdry_slice(2, :)';
-            r = spobj.mfgridrz.sigunbund('r');
-            z = spobj.mfgridrz.sigunbund('z');
+            r = self.mfgridrz.sigunbund('r');
+            z = self.mfgridrz.sigunbund('z');
             %% find X point location and separatrix
             if lower(pos_tag(1)) == 'u'
                 [xnull_z, z_ind] = max(bdry_z);
@@ -567,8 +604,6 @@ classdef shotpara < mdsbase
             res.leg_length = leg_len;
             res.sp_distance_corner = abs(sp_dist_corner)/1000;
         end
-        
     end
-    
 end
 
