@@ -194,6 +194,7 @@ classdef shotpara < mdsbase
             self.readmftime;
             self.readmaxis(time_range);
             self.readmflux(time_range);
+            self.readmfbdryrz(time_range);
             self.readlimiter();
         end
         
