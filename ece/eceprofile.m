@@ -95,9 +95,14 @@ classdef eceprofile < radte
                 channel_list = Args.ChannelList;
                 frequency_list =  Args.FrequencyList;
             end
+            if isempty(channel_list) || isempty(frequency_list)
+                warning('Attribute "channelno" can not be set!')
+                return
+            end
             t = mean(self.time);
             shot_para = shotpara(self.shotno);
             shot_para.read(t+[-0.5 0.5]);
+            shot_para.calrbdry();
             s2p = spec2prof(shot_para, t);
             [pos_radius, valid_ind] = s2p.map2radius(frequency_list);
             channel_list = channel_list(valid_ind);
@@ -123,7 +128,8 @@ classdef eceprofile < radte
         
         % read shot para
         shot_para = shotpara(self.shotno);
-        shot_para.read;
+        shot_para.read();
+        shot_para.calrbdry();
         if isempty(self.load_time_range)
             time_median = mean(shot_para.pulseflat);
         else
