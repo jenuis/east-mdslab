@@ -376,7 +376,68 @@ classdef prbfit
             fit_res.fval = fval;
             fit_res.chi2 = prbfit.chi_squared(fit_data, fit_res, num_fit_vars);
         end
-        
+          
+        function fit_res = mapfit(fit_data, varargin)
+            %% check arguments
+            if ~fieldexist(fit_data, 'xdata') || ~fieldexist(fit_data, 'ydata')
+                error('fit_data is has no xdata or ydata field!')
+            end
+           %% area of the probe tip 
+            area = [0.0625,0.0375,0.0375,0.0220,0.0174,0.0188,...
+                       0.0220,0.0152,0.0446,0.0521,0.0469,0.0313];
+            Args = struct(...
+                'ZeroBg', 0, ...
+                'MsParallel', 0, ...
+                'MsStartNo', 4, ...
+                'FitBdry', [1000 100 100 50 100; 0 0 0 -50 -100],...
+                'Params',struct('use_inds',1:4,... %% Ohmic Parameters
+                    'C',struct('mean',[3.01,14.46,4.50,-4.11],'std',[0.90,3.24,1.32,1.40]),...
+                    'area',area,...
+                     'area_err',[0.0063,0.0037,0.0036,0.0014,0.0011,0.0010,...
+                       0.0013,0.0010,0.0044,0.0050,0.0044,0.0031],...
+                      'is_std',fit_data.yerr .* area ./ 0.6745,... %% STD = MAD ./ 0.6745
+                      'js_mean',fit_data.ydata...
+                ));
+            Args = parseArgs(varargin, Args, {'MsParallel', 'ZeroBg'});
+            assert(sum(isnan(fit_data.ydata) | isnan(fit_data.xdata)) == 0, 'fit_data has NaN inside!');
+            %% set fit boundary
+            ub = Args.FitBdry(1,:);
+            lb = Args.FitBdry(2,:);
+            num_fit_vars = 5;
+            if Args.ZeroBg
+                ub(5) = 0; lb(5) = 0;
+                num_fit_vars = 4;
+            elseif fieldexist(fit_data, 'ymin') && isnumeric(fit_data.ymin)
+                ub(5) = sum(fit_data.ymin);
+                lb(5) = -diff(fit_data.ymin);
+            end
+            ub(4) = max(fit_data.xdata);
+            lb(4) = min(fit_data.xdata);
+            ub(3) = ub(4) - lb(4);
+            ub(2) = ub(3);
+            ub(1) = max(fit_data.ydata)*10;
+            %% fit data
+            Params = Args.Params;
+            js_std = sqrt((Params.area_err_std.^2 .* Params.js_mean.^2 + Params.is_std.^2)./ (Params.area.^2));
+            MAP = @(coeff) sum((fit_data.ydata - model(coeff,fit_data.xdata)).^2 ./(js_std.^2) ) + sum((coeff(Params.use_inds)-Params.C.mean(Params.use_inds)).^2./(Params.C.std(Params.use_inds).^2));
+            x0 = Params.C.mean; %% set init value
+            problem = createOptimProblem('fmincon',...
+                'objective',MAP,...
+                'xdata',fit_data.xdata,'ydata',fit_data.ydata,...
+                'x0',x0,...
+                'lb',lb,...
+                'ub',ub,'options',options);
+            ms = MultiStart;
+            ms.UseParallel = ms_parallel;
+            ms.Display = 'off';
+            coeff = fmincon(problem);
+            %% calculate R^2
+            r2 = rsquare(ydata, model(coeff, fit_data.xdata));
+            [~, fit_res] = prbfit.fun_eich(coeff);
+            fit_res.r2 = r2;
+            fit_res.fval = fval;
+            fit_res.chi2 = prbfit.chi_squared(fit_data, fit_res, num_fit_vars);
+        end      
         function lambda_int = cal_lambda_int(fit_data, fit_res, varargin)
             Args.Method = 'median'; % {'median', 'left', 'right'}
             Args.Type = 'eich'; % {'eich', 'raw'}
