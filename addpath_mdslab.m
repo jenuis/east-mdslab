@@ -7,7 +7,8 @@ if nargin < 1
     sub_module = '';
 end
 %% get current dir
-curr_dir = fileparts(mfilename('fullpath'));
+% curr_dir = fileparts(mfilename('fullpath')); % might be copied in tmp path in parallel jobs
+curr_dir = repoabspath('east-mdslab');
 %% add necessary path
 repopathctrl(curr_dir, 'mdslib', operation);
 assert(exist('addpath_matutil.m','file') == 2, ...
